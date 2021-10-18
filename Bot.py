@@ -7,7 +7,7 @@ from asyncio import sleep
 
 
 class MyClient(discord.Client):
-    r"""Represents the Bot-Client"""
+    """Represents the Bot-Client"""
 
     def __init__(self):
         discord.Client.__init__(self)
@@ -33,7 +33,7 @@ class MyClient(discord.Client):
             await message.channel.send(client.help_text)
 
 class poll(object):
-    r"""Represents the poll-Object which the Bot can create."""
+    """Represents the poll-Object which the Bot can create."""
 
     def __init__(self, time = 60, name = 'default'):
         self.time = time
@@ -50,6 +50,8 @@ class poll(object):
 
 #Realisierung der Wiki-Funktion (es funktioniert irgendwie nicht wenn ich diese Funktion mit in die MyClient-Klasse mache)
 async def wiki(message: Message):
+    """Realisierung der Wiki-Funktion"""
+
     val = message.content.split(" ", 1)[1]
 
     #Sprachparameter auswerten
