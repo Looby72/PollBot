@@ -4,9 +4,8 @@ from discord import client
 from discord.message import Message
 from discord.reaction import Reaction
 from discord.user import User
-import wikipedia
 from asyncio import sleep
-
+import wiki
 
 class MyClient(discord.Client):
     """Represents the Bot-Client"""
@@ -15,21 +14,23 @@ class MyClient(discord.Client):
         discord.Client.__init__(self)
         self.poll_list = []
         self.poll_status = 0 #zum abfragen mit welchem Emoji im Embed reagiert wurde 0-default 1-zeitänderung 2-namensänderung 3-13-Antwortmöglichkeitänderung
-        self.wiki_default_lang = "de"
         self.help_text = "!wiki (?[Sprachkürzel]) [Suchbegriff] --> Wikipediazusammenfassung des Suchbegriffes in gewünschter Sprache (standardmäßig deutsch)"
         self.emoji_list = ["0️⃣","1️⃣","2️⃣","3️⃣","4️⃣","5️⃣","6️⃣","7️⃣","8️⃣","9️⃣","🔟"]
 
-    #bot ist eingeloggt
+    
     async def on_ready(self):
+        """Called when the Bot Client is logged in after the start."""
+
         print("Bot is online")
         await client.change_presence(activity=discord.Game("!help"), status=discord.Status.online)
     
-    #nachricht wird in channel gepostet
     async def on_message(self, message: Message):
+        """Called when a message is posted in a channel which the bot can read."""
+
         if message.author == client.user:
             return
         elif message.content.startswith("!wiki "):
-            await wiki(message)
+            await wiki.wiki_main(message)
         elif message.content.startswith("!poll "):
             await poll_func1(message)
         elif message.content == "!help":
@@ -78,6 +79,9 @@ class MyClient(discord.Client):
             
     #reaction added on a message (not called when message not in internal message-cache)
     async def on_reaction_add(self, reaction: Reaction, user: User):
+        """Called when a reaction has been added to a message in a channel which the bot can read.
+        (not called when message is not in internal message-chache of the Bot)"""
+
         if user == client.user:
             return
         if reaction.message.id == self.poll_list[0].mess.id:
@@ -112,7 +116,7 @@ class poll(object):
         self.mess = None
 
         for i in range(ans_number):
-            self.new_ans_op("default_op" + str(i))
+            self.new_ans_op("default_op " + str(i))
 
     def new_ans_op(self, name: str):
         self.answer_options.append(name)
@@ -163,52 +167,16 @@ class poll(object):
         await send_msg.channel.send("Abstimmung wurde beendet\n '" + client.poll_list[0].answer_options[index] + "' hat die Abstimmung mit " + str(temp_number -1) + " votes gewonnen!")
         del client.poll_list[0]
 
-#Realisierung der Wiki-Funktion (es funktioniert irgendwie nicht wenn ich diese Funktion mit in die MyClient-Klasse mache)
-async def wiki(message: Message):
-    """Realisierung der Wiki-Funktion"""
-
-    val = message.content.split(" ", 1)[1]
-
-    #Sprachparameter auswerten
-    if val.startswith("?"):
-        searchval = val.split(" ", 1)[1]
-        param = val.split(" ", 1)[0].replace("?", "")
-        if param in wikipedia.languages():
-            wikipedia.set_lang(param)
-        else:
-            await message.channel.send('Language "' + param + '" is not supported')
-            return
-    else:
-        searchval = val
-    try:
-        title = wikipedia.search(searchval)[0]
-        page = wikipedia.page(title=title, auto_suggest=False)
-        #Embed descriptions have a character Limit of 4096
-        string = page.summary
-        string = string + "\n[original Artikel](" + page.url + ")"
-        
-        i = 10
-        while len(string) > 4096:
-            string = wikipedia.summary(title=title, sentences=i) + "\n[original Artikel](" + page.url + ")"
-            i -= 1
-        embed = discord.Embed(title = page.title, description = string, color = 0xcacfc9, timestamp=datetime.datetime.utcnow())
-        pictures = page.images
-        if len(pictures) > 0:
-            embed.set_thumbnail(url=pictures[0])
-
-        await message.channel.send(embed=embed)
-
-    except Exception as e:
-        await message.channel.send(str(e))
-    wikipedia.set_lang(client.wiki_default_lang) 
-    return
 
 #to create a new poll
 async def poll_func1(message: Message):
+    """Calls the poll-constructor and stores the poll-object in MyClient.poll_list.
+    Starts the 'poll sequence'."""
+
     value = int(message.content.split(" ", 1)[1])
     client.poll_list.append(poll(value))
     await client.poll_list[0].send_Embed(message.channel)
 
 client = MyClient()
-wikipedia.set_lang(client.wiki_default_lang) #Sprache ändern
+#wikipedia.set_lang(client.wiki_default_lang) #Sprache ändern
 client.run("ODc5NzM4MzM0NzU3Mzg4Mzc4.YSUGKw.I0t9FBgfEvcPtcEVyoe5KbGF2-s")
