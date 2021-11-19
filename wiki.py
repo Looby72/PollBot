@@ -59,7 +59,7 @@ def get_page(keyword: str):
     return wikipedia.page(title=title, auto_suggest=False)
 
 def get_formatted_summary(page: WikipediaPage):
-    """Returns the formatted summary in the right length (character Limit of 4096 for discord-embeds)
+    """Returns the formatted summary in the right length (character Limit of 4096 for discord-embeds, 10 sentences)
     and with an embedded link to the orgiginal wikipedia article"""
 
     string = page.summary
