@@ -1,3 +1,4 @@
+"""defines the Poll-Class which represents the Poll-object"""
 
 import discord
 from discord.channel import TextChannel
@@ -6,7 +7,7 @@ from asyncio import sleep
 import datetime
 
 class Poll(object):
-    """Represents the poll-Object which the Bot can create."""
+    """Represents the Poll-Object which the Bot can create."""
 
     def __init__(self, ans_number, time = 60, name = 'default'):
         self.time = time
@@ -60,7 +61,7 @@ class Poll(object):
         """sends a new message (as Embed) which is shown while the poll is in progress, replaces and deletes current self.mess"""
         
         embed = discord.Embed(title=self.poll_name, colour=discord.Colour(0xc9a881),
-                            description = "Your vote has Started\n\nReact with one of the given Emoji's to vote. The poll will end in "+ str(self.time) +" Seconds.\n\n**Your Answer Options are:**\n",
+                            description = "Active Poll:\n\nReact with one of the given Emoji's to vote. The poll will end in "+ str(self.time) +" Seconds.\n\n**Answer Options are:**\n",
                             timestamp=datetime.datetime.utcnow())
 
         for i in range(self.ans_number):
@@ -68,6 +69,7 @@ class Poll(object):
         
         await self.mess.delete()
         self.mess = await channel.send(embed=embed)
+        await self.mess.pin()
 
         for i in range(self.ans_number):
             await self.mess.add_reaction(self.emoji_list[i])
@@ -96,5 +98,6 @@ class Poll(object):
         embed = discord.Embed(title=self.poll_name, colour=discord.Colour(0xc9a881),
                             description= "**The Winner is drawn**\n\n" + self.answer_options[winner] + " has won the poll with " + str(self.votes[winner]-1) + " votes.")
 
+        await self.mess.unpin()
         await self.mess.delete()
         self.mess = await channel.send(embed=embed)

@@ -34,12 +34,13 @@ class MyClient(discord.Client):
         else:
             try:
                 poll_obj = self.poll_dic[str(message.channel.id)]
+                self.set_poll_value(poll_obj, message.content)
+                await message.delete()
+                await poll_obj.send_setup_Embed(message.channel)
             except:
-                await message.channel.send("poll-object not found")
                 return
 
-            self.set_poll_value(poll_obj, message.content)
-            await poll_obj.send_setup_Embed(message.channel)
+            
             
     async def on_reaction_add(self, reaction: Reaction, user: User):
         """Called when a reaction has been added to a message in a channel which the bot can read.
@@ -52,7 +53,10 @@ class MyClient(discord.Client):
             poll_obj = self.poll_dic[str(reaction.message.channel.id)]
         except:
             return
-        await self.set_poll_status(poll_obj, reaction.emoji)
+        
+        if reaction.message.id == poll_obj.mess.id:
+            await self.set_poll_status(poll_obj, reaction.emoji)
+        
                     
     async def create_poll(self, message: Message):
         """Calls the poll-Constructor and stroes the object in the poll_dic with message id in which they're created"""
