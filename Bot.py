@@ -55,7 +55,10 @@ class MyClient(discord.Client):
             return
         
         if reaction.message.id == poll_obj.mess.id:
-            await self.set_poll_status(poll_obj, reaction.emoji)
+            if reaction.emoji == "❌":
+                await self.delete_poll(reaction.message.channel.id)
+            else:
+                await self.set_poll_status(poll_obj, reaction.emoji)
         
                     
     async def create_poll(self, message: Message):
@@ -106,6 +109,12 @@ class MyClient(discord.Client):
         send_msg = discord.utils.get(self.cached_messages, id=poll_obj.mess.id)
         await poll_obj.analyze_results(send_msg)
         del self.poll_dic[str(poll_obj.mess.channel.id)]
+
+    async def delete_poll(self, channel_id):
+        """deletes an poll which is in the setup-phase called when message recation with ❌"""
+        
+        await self.poll_dic[str(channel_id)].mess.delete()
+        del self.poll_dic[str(channel_id)]
 
 def main():
     client = MyClient()
