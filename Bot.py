@@ -12,7 +12,7 @@ class MyClient(discord.Client):
     def __init__(self):
         discord.Client.__init__(self)
         self.poll_dic = {}
-        self.help_text = "!wiki (?[Sprachkürzel]) [Suchbegriff] --> Wikipediazusammenfassung des Suchbegriffes in gewünschter Sprache (standardmäßig deutsch)"
+        self.help_text = "!wiki (?[Sprachkürzel]) [Suchbegriff] --> Wikipediazusammenfassung des Suchbegriffes in gewünschter Sprache (standardmäßig deutsch)\n!poll [number] --> create a poll with 'number' answer options"
 
     async def on_ready(self):
         """Called when the Bot Client is logged in after the start."""
@@ -69,6 +69,10 @@ class MyClient(discord.Client):
         except:
             return
         
+        if value > 11 or value < 2:
+            await message.channel.send("The number of the answer options has to be between 2 and 11.")
+            return
+
         new_poll = Poll(value)
         self.poll_dic[str(message.channel.id)] = new_poll
         await self.poll_dic[str(message.channel.id)].send_setup_Embed(message.channel)
