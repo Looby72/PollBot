@@ -60,8 +60,11 @@ class Poll(object):
     async def send_progress_Embed(self, channel: TextChannel):
         """sends a new message (as Embed) which is shown while the poll is in progress, replaces and deletes current self.mess"""
         
+        time = datetime.datetime.now() + datetime.timedelta(seconds=float(self.time))
+        time = str(time)
+        time = time.split(".")[0]
         embed = discord.Embed(title=self.poll_name, colour=discord.Colour(0xc9a881),
-                            description = "Active Poll:\n\nReact with one of the given Emoji's to vote. The poll will end in "+ str(self.time) +" Seconds.\n\n**Answer Options are:**\n",
+                            description = "Active Poll:\n\nReact with one of the given Emoji's to vote. The poll will end at "+ time +".\n\n**Answer Options are:**\n",
                             timestamp=datetime.datetime.utcnow())
 
         for i in range(self.ans_number):
