@@ -3,7 +3,7 @@ import discord
 from discord.message import Message
 from discord.reaction import Reaction
 from discord.user import User
-import wiki
+from wiki import wiki_main
 from poll import Poll
 
 class MyClient(discord.Client):
@@ -12,7 +12,9 @@ class MyClient(discord.Client):
     def __init__(self):
         discord.Client.__init__(self)
         self.poll_dic = {}
-        self.help_text = "!wiki (?[Sprachkürzel]) [Suchbegriff] --> Wikipediazusammenfassung des Suchbegriffes in gewünschter Sprache (standardmäßig deutsch)\n!poll [number] --> create a poll with 'number' answer options"
+        self.help_text = """!wiki (?[lang_acronym]) [search_phrase] --> get the summary of the wikipedia article (default language is german)\n
+!poll [number] --> create a poll with 'number' answer options --> then react on the setup-Message and write option-changes in the channel\n
+Please report any Bugs to Looby#7320 on Dicord."""
 
     async def on_ready(self):
         """Called when the Bot Client is logged in after the start."""
@@ -26,7 +28,7 @@ class MyClient(discord.Client):
         if message.author == self.user:
             return
         elif message.content.startswith("!wiki "):
-            await wiki.wiki_main(message)
+            await wiki_main(message)
         elif message.content.startswith("!poll "):
             await self.create_poll(message)
         elif message.content == "!help":
@@ -63,6 +65,14 @@ class MyClient(discord.Client):
                     
     async def create_poll(self, message: Message):
         """Calls the poll-Constructor and stroes the object in the poll_dic with message id in which they're created"""
+
+        if type(message.channel) is discord.DMChannel:
+            await message.channel.send("The !poll feature is not available in DM-Channels.")
+            return
+
+        if str(message.channel.id) in self.poll_dic:
+            await message.channel.send("There is already an existing poll in this channel. Wait until its finished or delete it if the poll has not started yet.")
+            return
 
         try:
             value = int(message.content.split(" ", 1)[1])
