@@ -9,7 +9,7 @@ from wikipedia.wikipedia import WikipediaPage
 WIKI_DEFAULT_LANG = "de"
 
 async def wiki_main(message: Message):
-    """Realizes the wiki functionality of the Bot (entry function)"""
+    """Realizes the wiki feature of the Bot (entry function)"""
 
     command_params = message.content.split(" ", 1)[1]
     
