@@ -1,9 +1,9 @@
 
-import discord
-from discord import client
-from discord.ext import commands
-from discord.ext.commands.context import Context
-from discord import Message
+import disnake
+from disnake import client
+from disnake.ext import commands
+from disnake.ext.commands.context import Context
+from disnake import Message
 
 from poll_new import Poll
 from wiki import wiki_main
@@ -20,7 +20,7 @@ async def on_ready():
     """Called when the Bot Client is logged in after the start."""
 
     print("Bot is online")
-    await client.change_presence(activity=discord.Game("!help"), status=discord.Status.online)
+    await client.change_presence(activity=disnake.Game("!help"), status=disnake.Status.online)
 
 @client.command(
     name="wiki",
@@ -77,7 +77,7 @@ class utils:
     async def create_poll(message: Message):
         """Calls the poll-Constructor and stroes the object in the poll_dic with message id in which they're created"""
 
-        if type(message.channel) is discord.DMChannel:
+        if type(message.channel) is disnake.DMChannel:
             await message.channel.send("The !poll feature is not available in DM-Channels.")
             return
 
@@ -101,7 +101,7 @@ class utils:
             return
 
         await poll_obj.start()
-        send_msg = discord.utils.get(client.cached_messages, id=poll_obj.mess.id)
+        send_msg = disnake.utils.get(client.cached_messages, id=poll_obj.mess.id)
         await poll_obj.analyze_results(send_msg)
         del poll_dic[str(poll_obj.mess.channel.id)]
 

@@ -1,8 +1,8 @@
 """defines the Poll-Class which represents the Poll-object"""
 
-import discord
-from discord.channel import TextChannel
-from discord.message import Message
+import disnake
+from disnake.channel import TextChannel
+from disnake.message import Message
 from asyncio import sleep
 import datetime
 
@@ -69,7 +69,7 @@ class Poll(object):
         """sends a new setup message (as Embed) in the Text-Channel and deletes the last setup Message,
         if this isn't the first one"""
         
-        embed = discord.Embed(title=self.poll_name, colour=discord.Colour(0xc9a881),
+        embed = disnake.Embed(title=self.poll_name, colour=disnake.Colour(0xc9a881),
                             description="\n**Current Settings:**\npoll name = '" +  self.poll_name +"'\ntime = "+ str(self.time) +" seconds\nnumber of answers = "+ str(self.ans_number) +"\n\n**Current answer oprions:**\n",
                             timestamp=datetime.datetime.utcnow())
 
@@ -93,7 +93,7 @@ class Poll(object):
         time = datetime.datetime.now() + datetime.timedelta(seconds=float(self.time))
         time = str(time)
         time = time.split(".")[0]
-        embed = discord.Embed(title=self.poll_name, colour=discord.Colour(0xc9a881),
+        embed = disnake.Embed(title=self.poll_name, colour=disnake.Colour(0xc9a881),
                             description = "Active Poll:\n\nReact with one of the given Emoji's to vote. The poll will end at "+ time +".\n\n**Answer Options are:**\n",
                             timestamp=datetime.datetime.utcnow())
 
@@ -128,7 +128,7 @@ class Poll(object):
     async def send_result_Embed(self, winner: int):
         """sends a new result-message (as Embed) which is shown after the poll-event ends also replaces and deletes the current self.mess"""
         
-        embed = discord.Embed(title=self.poll_name, colour=discord.Colour(0xc9a881),
+        embed = disnake.Embed(title=self.poll_name, colour=disnake.Colour(0xc9a881),
                             description= "**The Winner is drawn**\n\n" + self.answer_options[winner] + " has won the poll with " + str(self.votes[winner]-1) + " votes.")
 
         await self.mess.unpin()
