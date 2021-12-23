@@ -6,7 +6,7 @@ from discord.ext.commands.context import Context
 from discord import Message
 
 from poll_new import Poll
-from Bot.wiki import wiki_main
+from wiki import wiki_main
 
 poll_dic = {}
 
@@ -50,19 +50,23 @@ async def poll(ctx: Context, *args: str):
     elif args[0] == "rename":
         if len(args) < 2:
             return
-        utils.rename_poll(ctx.message.channel.id, args[1])
+        await utils.rename_poll(ctx.message.channel.id, args[1])
     elif args[0] == "time":
         if len(args) < 2:
             return
-        utils.set_poll_time(ctx.message.channel.id, args[1])
+        await utils.set_poll_time(ctx.message.channel.id, args[1])
     elif args[0] == "delete":
         if len(args) > 1:
             return
         await utils.delete_poll(ctx.message.channel.id)
     elif args[0] == "addans":
-        pass
+        if len(args) < 2:
+            return
+        await utils.add_answer(ctx.message)
     elif args[0] == "delans":
-        pass
+        if len(args) < 2:
+            return
+        await utils.delete_answer(ctx.message)
     return
 
 
@@ -81,18 +85,11 @@ class utils:
             await message.channel.send("There is already an existing poll in this channel. Wait until its finished or delete it if the poll has not started yet.")
             return
 
-        try:
-            value = int(message.content.split(" ", 2)[2])
-        except ValueError:
-            return
+        value = message.content.split(" ", 2)[2]
         
-        if value > 11 or value < 2:
-            await message.channel.send("The number of the answer options has to be between 2 and 11.")
-            return
-
-        new_poll = Poll(value)
+        new_poll = Poll(name=value, channel= message.channel)
         poll_dic[str(message.channel.id)] = new_poll
-        await poll_dic[str(message.channel.id)].send_setup_Embed(message.channel)
+        await poll_dic[str(message.channel.id)].send_setup_Embed()
 
     @staticmethod
     async def start_poll(channel_id: int):
@@ -109,7 +106,7 @@ class utils:
         del poll_dic[str(poll_obj.mess.channel.id)]
 
     @staticmethod
-    def rename_poll(channel_id: int, new_name: str):
+    async def rename_poll(channel_id: int, new_name: str):
         """Changes the Poll.poll_name attribute of a Poll in the channel, if it exists."""
 
         try:
@@ -118,11 +115,11 @@ class utils:
             return
 
         poll_obj.poll_name = new_name
-        poll_obj.send_setup_embed()
+        await poll_obj.send_setup_Embed()
         return
 
     @staticmethod
-    def set_poll_time(channel_id: int, new_time: str):
+    async def set_poll_time(channel_id: int, new_time: str):
         """Changes the Poll.time attribute of a Poll in the channel, if it exists."""
 
         try:
@@ -132,7 +129,7 @@ class utils:
             return
 
         poll_obj.time = new_time
-        poll_obj.send_setup_embed()
+        await poll_obj.send_setup_Embed()
         return
 
     @staticmethod
@@ -142,5 +139,37 @@ class utils:
         await poll_dic[str(channel_id)].mess.delete()
         del poll_dic[str(channel_id)]
         return 
+
+    @staticmethod
+    async def add_answer(message: Message):
+        """Adds an answer to the poll in the channel of ``message``."""
+
+        try:
+            poll_obj = poll_dic[str(message.channel.id)]
+        except KeyError:
+            return
+
+        answer = message.content.split(" ", 2)[2]
+        await poll_obj.new_ans_op(answer)
+        await poll_obj.send_setup_Embed()
+
+    @staticmethod
+    async def delete_answer(message: Message):
+        """Deletes an answer option by index of the poll in the channel of ``message``"""
+        
+        try:
+            poll_obj = poll_dic[str(message.channel.id)]
+        except KeyError:
+            return
+        
+        value = message.content.split(" ", 2)[2]
+
+        try:
+            value = int(value)
+            await poll_obj.del_ans_op(value)
+        except ValueError:
+            return
+        
+        await poll_obj.send_setup_Embed()
 
 client.run("ODc5NzM4MzM0NzU3Mzg4Mzc4.YSUGKw.I0t9FBgfEvcPtcEVyoe5KbGF2-s")
