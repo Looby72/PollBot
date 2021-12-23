@@ -3,7 +3,7 @@ import discord
 from discord.message import Message
 from discord.reaction import Reaction
 from discord.user import User
-from Bot.wiki import wiki_main
+from wiki import wiki_main
 from poll import Poll
 
 class MyClient(discord.Client):
