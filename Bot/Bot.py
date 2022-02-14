@@ -14,7 +14,7 @@ class MyClient(discord.Client):
         self.poll_dic = {}
         self.help_text = """!wiki (?[lang_acronym]) [search_phrase] --> get the summary of the wikipedia article (default language is german)\n
 !poll [number] --> create a poll with 'number' answer options --> then react on the setup-Message and write option-changes in the channel\n
-Please report any Bugs to Looby#7320 on Dicord."""
+Please report any Bugs to Looby#7320 on Discord."""
 
     async def on_ready(self):
         """Called when the Bot Client is logged in after the start."""
