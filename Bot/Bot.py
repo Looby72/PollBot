@@ -9,6 +9,7 @@ from poll import Poll
 from wiki import wiki_main
 
 poll_dic = {}
+token = input()
 
 client = commands.Bot(
     command_prefix="!",
@@ -172,4 +173,4 @@ class utils:
         
         await poll_obj.send_setup_Embed()
 
-client.run("ODc5NzM4MzM0NzU3Mzg4Mzc4.YSUGKw.I0t9FBgfEvcPtcEVyoe5KbGF2-s")
+client.run(token)
