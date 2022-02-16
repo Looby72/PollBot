@@ -1,8 +1,8 @@
 """Defines all Functions which are needed to realize the !wiki command of the Bot"""
 
-from discord.message import Message
+import disnake
+from disnake.message import Message
 import wikipedia
-import discord
 import datetime
 from wikipedia.wikipedia import WikipediaPage
 
@@ -22,7 +22,7 @@ async def wiki_main(message: Message):
             
         embed = get_embed(searchval)
     except Exception as err:
-        embed = discord.Embed(title = "Error", description = str(err), color = 0xcacfc9, timestamp=datetime.datetime.utcnow())
+        embed = disnake.Embed(title = "Error", description = str(err), color = 0xcacfc9, timestamp=datetime.datetime.utcnow())
     
     await message.channel.send(embed=embed)
 
@@ -41,11 +41,11 @@ def lang_param(content: str):
     return searchval
 
 def get_embed(searchval: str):
-    """Returns the Discord.embed-object (formatted) to show the wikipedia-summary"""
+    """Returns the disnake.embed-object (formatted) to show the wikipedia-summary"""
 
     page = get_page(searchval)
     string = get_formatted_summary(page)
-    embed = discord.Embed(title = page.title, description = string, color = 0xcacfc9, timestamp=datetime.datetime.utcnow())
+    embed = disnake.Embed(title = page.title, description = string, color = 0xcacfc9, timestamp=datetime.datetime.utcnow())
     thumbnail = get_picture_url(page)
     if thumbnail != None:
         embed.set_thumbnail(url=thumbnail)
@@ -59,7 +59,7 @@ def get_page(keyword: str):
     return wikipedia.page(title=title, auto_suggest=False)
 
 def get_formatted_summary(page: WikipediaPage):
-    """Returns the formatted summary in the right length (character Limit of 4096 for discord-embeds, 10 sentences)
+    """Returns the formatted summary in the right length (character Limit of 4096 for Discord-embeds, 10 sentences)
     and with an embedded link to the orgiginal wikipedia article"""
 
     string = page.summary

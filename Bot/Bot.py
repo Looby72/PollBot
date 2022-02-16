@@ -1,138 +1,175 @@
 
-import discord
-from discord.message import Message
-from discord.reaction import Reaction
-from discord.user import User
-from wiki import wiki_main
+import disnake
+from disnake import client
+from disnake.ext import commands
+from disnake.ext.commands.context import Context
+from disnake import Message
+
 from poll import Poll
+from wiki import wiki_main
 
-class MyClient(discord.Client):
-    """Represents the Bot-Client"""
+poll_dic = {}
 
-    def __init__(self):
-        discord.Client.__init__(self)
-        self.poll_dic = {}
-        self.help_text = """!wiki (?[lang_acronym]) [search_phrase] --> get the summary of the wikipedia article (default language is german)\n
-!poll [number] --> create a poll with 'number' answer options --> then react on the setup-Message and write option-changes in the channel\n
-Please report any Bugs to Looby#7320 on Discord."""
+client = commands.Bot(
+    command_prefix="!",
+    help_command= None
+)
 
-    async def on_ready(self):
-        """Called when the Bot Client is logged in after the start."""
+@client.event
+async def on_ready():
+    """Called when the Bot Client is logged in after the start."""
 
-        print("Bot is online")
-        await self.change_presence(activity=discord.Game("!help"), status=discord.Status.online)
+    print("Bot is online")
+    await client.change_presence(activity=disnake.Game("!help"), status=disnake.Status.online)
+
+@client.command(
+    name="wiki",
+    aliases=["Wiki", "wikipedia", "Wikipedia", "w", "W"],
+    description= "Get the summary of the wikipedia article. (default language is german)",
+    help= "wiki")
+async def wiki(ctx: Context):
+    await wiki_main(ctx.message)
+
+@client.command(
+    name="poll",
+    aliases=["Poll", "p", "P"],
+    description= "Command to create and setup a new Poll in a Text-Channel (Not DM-Channel)\n",
+    help= "poll")
+async def poll(ctx: Context, *args: str):
+
+    if len(args) < 1 or len(args) > 2:
+        return
+    if args[0] == "create":
+        if len(args) < 2:
+            return
+        await utils.create_poll(ctx.message)
+    elif args[0] == "start":
+        if len(args) > 1:
+            return
+        await utils.start_poll(ctx.message.channel.id)
+    elif args[0] == "rename":
+        if len(args) < 2:
+            return
+        await utils.rename_poll(ctx.message.channel.id, args[1])
+    elif args[0] == "time":
+        if len(args) < 2:
+            return
+        await utils.set_poll_time(ctx.message.channel.id, args[1])
+    elif args[0] == "delete":
+        if len(args) > 1:
+            return
+        await utils.delete_poll(ctx.message.channel.id)
+    elif args[0] == "addans":
+        if len(args) < 2:
+            return
+        await utils.add_answer(ctx.message)
+    elif args[0] == "delans":
+        if len(args) < 2:
+            return
+        await utils.delete_answer(ctx.message)
+    return
+
+
+
+class utils:
     
-    async def on_message(self, message: Message):
-        """Called when a message is posted in a channel which the bot can read."""
-
-        if message.author == self.user:
-            return
-        elif message.content.startswith("!wiki "):
-            await wiki_main(message)
-        elif message.content.startswith("!poll "):
-            await self.create_poll(message)
-        elif message.content == "!help":
-            await message.channel.send(self.help_text)
-        else:
-            try:
-                poll_obj = self.poll_dic[str(message.channel.id)]
-                self.set_poll_value(poll_obj, message.content)
-                await message.delete()
-                await poll_obj.send_setup_Embed(message.channel)
-            except:
-                return
-
-            
-            
-    async def on_reaction_add(self, reaction: Reaction, user: User):
-        """Called when a reaction has been added to a message in a channel which the bot can read.
-        (not called when message is not in internal message-chache of the Bot)"""
-
-        if user == self.user:
-            return
-
-        try:
-            poll_obj = self.poll_dic[str(reaction.message.channel.id)]
-        except:
-            return
-        
-        if reaction.message.id == poll_obj.mess.id:
-            if reaction.emoji == "❌":
-                await self.delete_poll(reaction.message.channel.id)
-            else:
-                await self.set_poll_status(poll_obj, reaction.emoji)
-        
-                    
-    async def create_poll(self, message: Message):
+    @staticmethod
+    async def create_poll(message: Message):
         """Calls the poll-Constructor and stroes the object in the poll_dic with message id in which they're created"""
 
-        if type(message.channel) is discord.DMChannel:
+        if type(message.channel) is disnake.DMChannel:
             await message.channel.send("The !poll feature is not available in DM-Channels.")
             return
 
-        if str(message.channel.id) in self.poll_dic:
+        if str(message.channel.id) in poll_dic:
             await message.channel.send("There is already an existing poll in this channel. Wait until its finished or delete it if the poll has not started yet.")
             return
 
-        try:
-            value = int(message.content.split(" ", 1)[1])
-        except:
-            return
+        value = message.content.split(" ", 2)[2]
         
-        if value > 11 or value < 2:
-            await message.channel.send("The number of the answer options has to be between 2 and 11.")
-            return
+        new_poll = Poll(name=value, channel= message.channel)
+        poll_dic[str(message.channel.id)] = new_poll
+        await poll_dic[str(message.channel.id)].send_setup_Embed()
 
-        new_poll = Poll(value)
-        self.poll_dic[str(message.channel.id)] = new_poll
-        await self.poll_dic[str(message.channel.id)].send_setup_Embed(message.channel)
-    
-    def set_poll_value(self, poll_obj: Poll, content: str):
-        """reads the poll_status from the right poll-object and sets the value (depending on poll_status)"""
-        
-        status = poll_obj.poll_status
-
-        if status == 0:
-            return
-        elif status == 1:
-            poll_obj.time = int(content)
-        elif status == 2:
-            poll_obj.poll_name = content
-        elif status > 2 and status < 14:
-            i = status - 3
-            poll_obj.answer_options[i] = content
-
-    async def set_poll_status(self, poll_obj: Poll, emoji: str):
-        """sets the poll status of poll_obj (depending on the given emoji)"""
-
-        if emoji == "⏱":
-            poll_obj.poll_status = 1      
-        elif emoji == "✏":
-            poll_obj.poll_status = 2     
-        elif emoji == "✅":
-            await self.start_poll(poll_obj)
-        else:       
-            for i in range(len(poll_obj.emoji_list)):
-                if emoji == poll_obj.emoji_list[i]:
-                    poll_obj.poll_status = i+3
-    
-    async def start_poll(self, poll_obj: Poll):
+    @staticmethod
+    async def start_poll(channel_id: int):
         """starts the poll event of poll_obj, calls Poll.start and Poll.send_result_Embed"""
 
+        try:
+            poll_obj = poll_dic[str(channel_id)]
+        except KeyError:
+            return
+
         await poll_obj.start()
-        send_msg = discord.utils.get(self.cached_messages, id=poll_obj.mess.id)
+        send_msg = disnake.utils.get(client.cached_messages, id=poll_obj.mess.id)
         await poll_obj.analyze_results(send_msg)
-        del self.poll_dic[str(poll_obj.mess.channel.id)]
+        del poll_dic[str(poll_obj.mess.channel.id)]
 
-    async def delete_poll(self, channel_id):
-        """deletes an poll which is in the setup-phase called when message recation with ❌"""
+    @staticmethod
+    async def rename_poll(channel_id: int, new_name: str):
+        """Changes the Poll.poll_name attribute of a Poll in the channel, if it exists."""
+
+        try:
+            poll_obj = poll_dic[str(channel_id)]
+        except KeyError:
+            return
+
+        poll_obj.poll_name = new_name
+        await poll_obj.send_setup_Embed()
+        return
+
+    @staticmethod
+    async def set_poll_time(channel_id: int, new_time: str):
+        """Changes the Poll.time attribute of a Poll in the channel, if it exists."""
+
+        try:
+            poll_obj = poll_dic[str(channel_id)]
+            new_time = int(new_time)
+        except (KeyError, ValueError):
+            return
+
+        poll_obj.time = new_time
+        await poll_obj.send_setup_Embed()
+        return
+
+    @staticmethod
+    async def delete_poll(channel_id: int):
+        """deletes an poll which is in the setup-phase."""
         
-        await self.poll_dic[str(channel_id)].mess.delete()
-        del self.poll_dic[str(channel_id)]
+        await poll_dic[str(channel_id)].mess.delete()
+        del poll_dic[str(channel_id)]
+        return 
 
-def main():
-    client = MyClient()
-    client.run("ODc5NzM4MzM0NzU3Mzg4Mzc4.YSUGKw.I0t9FBgfEvcPtcEVyoe5KbGF2-s")
+    @staticmethod
+    async def add_answer(message: Message):
+        """Adds an answer to the poll in the channel of ``message``."""
 
-if __name__ == '__main__':
-    main()
+        try:
+            poll_obj = poll_dic[str(message.channel.id)]
+        except KeyError:
+            return
+
+        answer = message.content.split(" ", 2)[2]
+        await poll_obj.new_ans_op(answer)
+        await poll_obj.send_setup_Embed()
+
+    @staticmethod
+    async def delete_answer(message: Message):
+        """Deletes an answer option by index of the poll in the channel of ``message``"""
+        
+        try:
+            poll_obj = poll_dic[str(message.channel.id)]
+        except KeyError:
+            return
+        
+        value = message.content.split(" ", 2)[2]
+
+        try:
+            value = int(value)
+            await poll_obj.del_ans_op(value)
+        except ValueError:
+            return
+        
+        await poll_obj.send_setup_Embed()
+
+client.run("ODc5NzM4MzM0NzU3Mzg4Mzc4.YSUGKw.I0t9FBgfEvcPtcEVyoe5KbGF2-s")
