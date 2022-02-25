@@ -3,6 +3,7 @@ import discord
 from discord.message import Message
 from discord.reaction import Reaction
 from discord.user import User
+from disnake import Embed
 from wiki import wiki_main
 from poll import Poll
 
@@ -14,7 +15,7 @@ class MyClient(discord.Client):
         self.poll_dic = {}
         self.help_text = """!wiki (?[lang_acronym]) [search_phrase] --> get the summary of the wikipedia article (default language is german)\n
 !poll [number] --> create a poll with 'number' answer options --> then react on the setup-Message and write option-changes in the channel\n
-Please report any Bugs to Looby#7320 on Discord."""
+Please report any Bugs on [GitHub](https://github.com/Looby72/DiscordBot/issues)"""
 
     async def on_ready(self):
         """Called when the Bot Client is logged in after the start."""
@@ -32,7 +33,7 @@ Please report any Bugs to Looby#7320 on Discord."""
         elif message.content.startswith("!poll "):
             await self.create_poll(message)
         elif message.content == "!help":
-            await message.channel.send(self.help_text)
+            await message.channel.send(embed=discord.Embed(description=self.help_text))
         else:
             try:
                 poll_obj = self.poll_dic[str(message.channel.id)]
@@ -132,7 +133,8 @@ Please report any Bugs to Looby#7320 on Discord."""
 
 def main():
     client = MyClient()
-    client.run("ODc5NzM4MzM0NzU3Mzg4Mzc4.YSUGKw.I0t9FBgfEvcPtcEVyoe5KbGF2-s")
+    token = input("Bot-Token:")
+    client.run(token)
 
 if __name__ == '__main__':
     main()
