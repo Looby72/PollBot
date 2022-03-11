@@ -9,7 +9,7 @@ from poll import Poll
 from wiki import wiki_main
 
 poll_dic = {}
-token = input()
+token = input("Bot-token:")
 
 client = commands.Bot(
     command_prefix="!",
@@ -74,7 +74,7 @@ async def poll(ctx: Context, *args: str):
     name="help",
     description="Get help for all commands this Bot understands.")
 async def help(ctx: Context):
-    ctx.channel.send(embed=disnake.Embed(description="""!wiki (?[lang_acronym]) [search_phrase] --> get the summary of the wikipedia article (default language is german)\n
+    await ctx.channel.send(embed=disnake.Embed(description="""!wiki (?[lang_acronym]) [search_phrase] --> get the summary of the wikipedia article (default language is german)\n
 !poll [number] --> create a poll with 'number' answer options --> then react on the setup-Message and write option-changes in the channel\n
 Please report any Bugs on [GitHub](https://github.com/Looby72/DiscordBot/issues)"""))
 
