@@ -1,19 +1,22 @@
 
 import disnake
-from disnake import client
+from disnake import ApplicationCommandInteraction, client
 from disnake.ext import commands
 from disnake.ext.commands.context import Context
 from disnake import Message
 
 from poll import Poll
-from wiki import wiki_main
+from wiki import wiki_main, WIKI_DEFAULT_LANG
 
 poll_dic = {}
 token = input("Bot-token:")
 
 client = commands.Bot(
-    command_prefix="!",
-    help_command= None
+    command_prefix="{",
+    help_command= None,
+    intetns= disnake.Intents.default(),
+    test_guilds= [776501653020344380],
+    sync_commands_debug= True
 )
 
 @client.event
@@ -28,8 +31,28 @@ async def on_ready():
     aliases=["Wiki", "wikipedia", "Wikipedia", "w", "W"],
     description= "Get the summary of the wikipedia article. (default language is german)",
     help= "wiki")
-async def wiki(ctx: Context):
-    await wiki_main(ctx.message)
+async def wiki(ctx: Context, *args: str):
+    if args[0].startswith("?"):
+        lang = args[0].split("?")[1]
+        args = args[1:]
+        await ctx.send(embed= wiki_main(" ".join(args), lang))
+    else:
+        await ctx.send(embed=wiki_main(" ".join(args)))
+
+@client.slash_command(
+    description= "Get the summary of the wikipedia article.")
+async def wiki(inter: ApplicationCommandInteraction, search_phrase: str, language= WIKI_DEFAULT_LANG):
+    await inter.response.send_message(embed=wiki_main(search_phrase, language))
+    """
+    Get the summary of the wikipedia article.
+
+    Parameters
+    ----------
+    search_phrase: :class:`str`
+        The term to search for
+    language: :class:`str`
+        The Wikipedia article language
+    """
 
 @client.command(
     name="poll",
@@ -75,8 +98,14 @@ async def poll(ctx: Context, *args: str):
     description="Get help for all commands this Bot understands.")
 async def help(ctx: Context):
     await ctx.channel.send(embed=disnake.Embed(description="""!wiki (?[lang_acronym]) [search_phrase] --> get the summary of the wikipedia article (default language is german)\n
-!poll [number] --> create a poll with 'number' answer options --> then react on the setup-Message and write option-changes in the channel\n
-Please report any Bugs on [GitHub](https://github.com/Looby72/DiscordBot/issues)"""))
+!poll create [name]             --> create a poll with a name
+!poll start                     --> start the poll
+!poll rename [name]             --> rename the poll
+!poll time [time_in_seconds]    --> set the lasting time of the poll
+!poll delete                    --> delete the poll
+!poll addans [name]             --> add a new answer option
+!poll delans [answer_index]     --> delete an answer option by index\n
+Please report any Bugs on [GitHub](https://github.com/Looby72/DiscordBot/issues)."""))
 
 
 class utils:

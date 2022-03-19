@@ -8,37 +8,25 @@ from wikipedia.wikipedia import WikipediaPage
 
 WIKI_DEFAULT_LANG = "de"
 
-async def wiki_main(message: Message):
+def wiki_main(search_phrase: str, lang= WIKI_DEFAULT_LANG):
     """Realizes the wiki feature of the Bot (entry function)"""
-
-    command_params = message.content.split(" ", 1)[1]
     
-    try:
-        if command_params.startswith("?"):
-            searchval = lang_param(command_params)
-        else:
-            wikipedia.set_lang(WIKI_DEFAULT_LANG)
-            searchval = command_params
-            
-        embed = get_embed(searchval)
+    try:    
+        lang_param(lang)
+        embed = get_embed(search_phrase)
     except Exception as err:
         embed = disnake.Embed(title = "Error", description = str(err), color = 0xcacfc9, timestamp=datetime.datetime.utcnow())
     
-    await message.channel.send(embed=embed)
+    return embed
 
 
-def lang_param(content: str):
-    """Checks and splits the language parameter from 'content' and sets the language for the wikipedia search"""
-
-    searchval = content.split(" ", 1)[1]
-    langval = content.split(" ", 1)[0].replace("?", "")
+def lang_param(langval: str):
+    """Checks if the language parameter exists and sets the language in wikipedia"""
 
     if langval in wikipedia.languages():
         wikipedia.set_lang(langval)
     else:
         raise Exception("Language '" + langval + "' not supported")
-    
-    return searchval
 
 def get_embed(searchval: str):
     """Returns the disnake.embed-object (formatted) to show the wikipedia-summary"""
