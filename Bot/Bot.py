@@ -12,7 +12,7 @@ poll_dic = {}
 token = input("Bot-token:")
 
 client = commands.Bot(
-    command_prefix="{",
+    command_prefix="!",
     help_command= None,
     intetns= disnake.Intents.default(),
     sync_commands_debug= True
@@ -36,12 +36,12 @@ async def wiki(ctx: Context, *args: str):
         args = args[1:]
         await ctx.send(embed= wiki_main(" ".join(args), lang))
     else:
-        await ctx.send(embed=wiki_main(" ".join(args)))
+        await ctx.send(embed= wiki_main(" ".join(args)))
 
 @client.slash_command(
     description= "Get the summary of the wikipedia article.")
 async def wiki(inter: ApplicationCommandInteraction, search_phrase: str, language= WIKI_DEFAULT_LANG):
-    await inter.response.send_message(embed=wiki_main(search_phrase, language))
+    await inter.response.send_message(embed= wiki_main(search_phrase, language))
     """
     Get the summary of the wikipedia article.
 
