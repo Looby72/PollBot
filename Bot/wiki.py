@@ -1,7 +1,6 @@
 """Defines all Functions which are needed to realize the !wiki command of the Bot"""
 
 import disnake
-from disnake.message import Message
 import wikipedia
 import datetime
 from wikipedia.wikipedia import WikipediaPage
@@ -9,7 +8,7 @@ from wikipedia.wikipedia import WikipediaPage
 WIKI_DEFAULT_LANG = "de"
 
 def wiki_main(search_phrase: str, lang= WIKI_DEFAULT_LANG):
-    """Realizes the wiki feature of the Bot (entry function)"""
+    """Entry method of the wiki module, takes search-phrase and language and returns the discord Embed"""
     
     try:    
         lang_param(lang)
