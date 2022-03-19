@@ -15,7 +15,6 @@ client = commands.Bot(
     command_prefix="{",
     help_command= None,
     intetns= disnake.Intents.default(),
-    test_guilds= [776501653020344380],
     sync_commands_debug= True
 )
 
