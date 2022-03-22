@@ -71,7 +71,7 @@ class Poll(object):
         
         embed = disnake.Embed(title=self.poll_name, colour=disnake.Colour(0xc9a881),
                             description="\n**Current Settings:**\npoll name = '" +  self.poll_name +"'\ntime = "+ str(self.time) +" seconds\nnumber of answers = "+ str(self.ans_number) +"\n\n**Current answer oprions:**\n",
-                            timestamp=datetime.datetime.utcnow())
+                            timestamp=datetime.datetime.now())
 
         for i in range(self.ans_number):
             embed.add_field(name=self.emoji_list[i], value=self.answer_options[i], inline=True)

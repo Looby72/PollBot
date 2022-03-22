@@ -14,7 +14,7 @@ def wiki_main(search_phrase: str, lang= WIKI_DEFAULT_LANG):
         lang_param(lang)
         embed = get_embed(search_phrase)
     except Exception as err:
-        embed = disnake.Embed(title = "Error", description = str(err), color = 0xcacfc9, timestamp=datetime.datetime.utcnow())
+        embed = disnake.Embed(title = "Error", description = str(err), color = 0xcacfc9, timestamp=datetime.datetime.now())
     
     return embed
 
@@ -32,7 +32,7 @@ def get_embed(searchval: str):
 
     page = get_page(searchval)
     string = get_formatted_summary(page)
-    embed = disnake.Embed(title = page.title, description = string, color = 0xcacfc9, timestamp=datetime.datetime.utcnow())
+    embed = disnake.Embed(title = page.title, description = string, color = 0xcacfc9, timestamp=datetime.datetime.now())
     thumbnail = get_picture_url(page)
     if thumbnail != None:
         embed.set_thumbnail(url=thumbnail)
