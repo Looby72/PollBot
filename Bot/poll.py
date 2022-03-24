@@ -27,18 +27,18 @@ class Poll(object):
     emoji_list: :class:`list[str]`
         The default emoji list which stores the emojis representing
         the answer options of the poll.
-    chanel: :class:`TextChannel`
-        The Discord text-channel the poll belongs to.
+    channel: :class:`TextChannel` or :class:`Thread`
+        The Discord text-channel or Thread the poll belongs to.
     """
 
-    def __init__(self, channel: TextChannel, ans_number = 0, time = 60, name = 'default'):
-        self.poll_name = name
-        self.time = time
-        self.ans_number = 0
-        self.answer_options = []
-        self.votes = []
+    def __init__(self, channel, ans_number = 0, time = 60, name = 'default'):
+        self.poll_name: str = name
+        self.time: int = time
+        self.ans_number: int = 0
+        self.answer_options: list = []
+        self.votes: list = []
         self.mess = None
-        self.emoji_list = ["0️⃣","1️⃣","2️⃣","3️⃣","4️⃣","5️⃣","6️⃣","7️⃣","8️⃣","9️⃣","🔟"]
+        self.emoji_list: list[str] = ["0️⃣","1️⃣","2️⃣","3️⃣","4️⃣","5️⃣","6️⃣","7️⃣","8️⃣","9️⃣","🔟"]
         self.channel = channel
 
         for i in range(ans_number):
@@ -95,14 +95,14 @@ class Poll(object):
         time = time.split(".")[0]
         embed = disnake.Embed(title=self.poll_name, colour=disnake.Colour(0xc9a881),
                             description = "Active Poll:\n\nReact with one of the given Emoji's to vote. The poll will end at "+ time +".\n\n**Answer Options are:**\n",
-                            timestamp=datetime.datetime.utcnow())
+                            timestamp=datetime.datetime.now())
 
         for i in range(self.ans_number):
             embed.add_field(name=self.emoji_list[i], value=self.answer_options[i], inline=True)
         
         await self.mess.delete()
         self.mess = await self.channel.send(embed=embed)
-        await self.mess.pin()
+        #await self.mess.pin()
 
         for i in range(self.ans_number):
             await self.mess.add_reaction(self.emoji_list[i])
@@ -126,11 +126,15 @@ class Poll(object):
         await self.send_result_Embed(winner)
 
     async def send_result_Embed(self, winner: int):
-        """sends a new result-message (as Embed) which is shown after the poll-event ends also replaces and deletes the current self.mess"""
+        """sends a new result-message (as Embed) which is shown after the poll-event ends also replaces and deletes the current self.mess, archives the Thread if 
+        the poll is in a Thread"""
         
         embed = disnake.Embed(title=self.poll_name, colour=disnake.Colour(0xc9a881),
-                            description= "**The Winner is drawn**\n\n" + self.answer_options[winner] + " has won the poll with " + str(self.votes[winner]-1) + " votes.")
+                            description= "**The Winner is drawn**\n\n" + self.answer_options[winner] + " has won the poll with " + str(self.votes[winner]-1) + " votes.",
+                            timestamp=datetime.datetime.now())
 
-        await self.mess.unpin()
+        #await self.mess.unpin()
         await self.mess.delete()
         self.mess = await self.channel.send(embed=embed)
+        if type(self.channel) is disnake.Thread:
+            await self.channel.edit(archived=True)
