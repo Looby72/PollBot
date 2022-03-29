@@ -82,12 +82,20 @@ class Poll(object):
 
 
     async def start(self):
-        """starts the poll-Event"""
+        """Starts the poll-Event. If the poll lasts longer than 24 hours (and poll is in Thread) then it sends a message every 24 hours in the Thread
+        to prevent the Thread from auto-archiving."""
 
         if self.ans_number < 2:
             raise PollError("Cannot start poll with less than 2 answer options.")
 
         await self.send_progress_Embed()
+
+        if type(self.channel) is Thread:
+            while(self.time > 86400):
+                self.time -= 86400
+                await sleep(86400)
+                message = await self.channel.send("Auto-dearchive message.")
+                await message.delete()
         await sleep(self.time)
 
     async def send_progress_Embed(self):
