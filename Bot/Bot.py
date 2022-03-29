@@ -127,7 +127,8 @@ class utils:
         try:
             await poll_obj.start()
         except PollError as error:
-            channel.send(str(error))
+            await channel.send(str(error))
+            return
 
         send_msg = disnake.utils.get(client.cached_messages, id=poll_obj.mess.id)
         await poll_obj.analyze_results(send_msg)
