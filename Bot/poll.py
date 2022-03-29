@@ -1,7 +1,7 @@
 """defines the Poll-Class which represents the Poll-object"""
 
 import disnake
-from disnake.channel import TextChannel
+from disnake.channel import TextChannel, Thread
 from disnake.message import Message
 from asyncio import sleep
 import datetime
@@ -17,9 +17,9 @@ class Poll(object):
         The lasting time of the poll.
     ans_number: :class:`int`
         The number of answers the poll consits of.
-    answer_options: :class:`list`
+    answer_options: :class:`list[str]`
         The list of answers.
-    votes: :class:`list`
+    votes: :class:`list[int]`
         The votes for each element of the answer_options list.
     mess: :class:`Message`
         The message, wich currently displays the poll in the TextChannel.
@@ -27,7 +27,7 @@ class Poll(object):
     emoji_list: :class:`list[str]`
         The default emoji list which stores the emojis representing
         the answer options of the poll.
-    channel: :class:`TextChannel` or :class:`Thread`
+    channel: :class:`TextChannel | Thread`
         The Discord text-channel or Thread the poll belongs to.
     """
 
@@ -35,11 +35,11 @@ class Poll(object):
         self.poll_name: str = name
         self.time: int = time
         self.ans_number: int = 0
-        self.answer_options: list = []
-        self.votes: list = []
-        self.mess = None
+        self.answer_options: list[str] = []
+        self.votes: list[int] = []
+        self.mess: Message = None
         self.emoji_list: list[str] = ["0️⃣","1️⃣","2️⃣","3️⃣","4️⃣","5️⃣","6️⃣","7️⃣","8️⃣","9️⃣","🔟"]
-        self.channel = channel
+        self.channel: TextChannel | Thread = channel
 
         for i in range(ans_number):
             self.new_ans_op("default_op " + str(i))
@@ -83,6 +83,9 @@ class Poll(object):
 
     async def start(self):
         """starts the poll-Event"""
+
+        if self.ans_number < 2:
+            raise PollError("Cannot start poll with less than 2 answer options.")
 
         await self.send_progress_Embed()
         await sleep(self.time)
@@ -136,5 +139,14 @@ class Poll(object):
         #await self.mess.unpin()
         await self.mess.delete()
         self.mess = await self.channel.send(embed=embed)
-        if type(self.channel) is disnake.Thread:
+        if type(self.channel) is Thread:
             await self.channel.edit(archived=True)
+
+class PollError(Exception):
+    """Custom Exception for all Exeption raised in Poll-Class"""
+
+    def __init__(self, error: str) -> None:
+        self.error = error
+
+    def __str__(self) -> str:
+        return self.error

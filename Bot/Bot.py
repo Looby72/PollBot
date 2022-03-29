@@ -1,14 +1,14 @@
 
 import disnake
-from disnake import ApplicationCommandInteraction, client
+from disnake import ApplicationCommandInteraction, TextChannel, Thread, client
 from disnake.ext import commands
 from disnake.ext.commands.context import Context
 from disnake import Message
 
-from poll import Poll
+from poll import Poll, PollError
 from wiki import wiki_main, WIKI_DEFAULT_LANG
 
-poll_dic = {} #all Poll objects are stored here
+poll_dic: dict[str, Poll] = {} #all Poll objects are stored here
 token = input("Bot-token:")
 
 client = commands.Bot(
@@ -39,7 +39,7 @@ async def wiki(ctx: Context, *args: str):
         await ctx.send(embed= wiki_main(" ".join(args)))
 
 @client.slash_command(
-    description= "Get the summary of the wikipedia article.")
+    description= "Get the summary of an wikipedia article.")
 async def wiki(inter: ApplicationCommandInteraction, search_phrase: str, language: str= WIKI_DEFAULT_LANG):
     await inter.response.send_message(embed= wiki_main(search_phrase, language))
 
@@ -60,7 +60,7 @@ async def poll(ctx: Context, *args: str):
     elif args[0] == "start":
         if len(args) > 1:
             return
-        await utils.start_poll(ctx.message.channel.id)
+        await utils.start_poll(ctx.message.channel)
     elif args[0] == "rename":
         if len(args) < 2:
             return
@@ -102,10 +102,10 @@ Please report any Bugs on [GitHub](https://github.com/Looby72/DiscordBot/issues)
 class utils:
     
     @staticmethod
-    async def create_poll(channel, name: str):
+    async def create_poll(channel: TextChannel | Thread, name: str):
         """Calls the poll-Constructor and stroes the object in the poll_dic[Thread.id] (every poll creates a new thread)"""
 
-        if not (type(channel) is disnake.TextChannel):
+        if not (type(channel) is TextChannel):
             await channel.send("This command is only avaliable in normal Guild-Text-Channels")
             return
 
@@ -116,21 +116,25 @@ class utils:
         await poll_dic[str(thread.id)].send_setup_Embed()
 
     @staticmethod
-    async def start_poll(channel_id: int):
+    async def start_poll(channel: TextChannel | Thread):
         """starts the poll event of poll_obj, calls Poll.start and Poll.send_result_Embed"""
 
         try:
-            poll_obj = poll_dic[str(channel_id)]
+            poll_obj = poll_dic[str(channel.id)]
         except KeyError:
             return
 
-        await poll_obj.start()
+        try:
+            await poll_obj.start()
+        except PollError as error:
+            channel.send(str(error))
+
         send_msg = disnake.utils.get(client.cached_messages, id=poll_obj.mess.id)
         await poll_obj.analyze_results(send_msg)
         del poll_dic[str(poll_obj.mess.channel.id)]
 
     @staticmethod
-    async def rename_poll(channel, new_name: str):
+    async def rename_poll(channel: TextChannel | Thread, new_name: str):
         """Changes the Poll.poll_name attribute of a Poll in the channel, if it exists."""
 
         try:
@@ -138,7 +142,7 @@ class utils:
         except KeyError:
             return
 
-        if type(channel) is disnake.Thread:
+        if type(channel) is Thread:
             await channel.edit(name= "Poll '" + new_name + "'")
         poll_obj.poll_name = new_name
         await poll_obj.send_setup_Embed()
@@ -159,10 +163,10 @@ class utils:
         return
 
     @staticmethod
-    async def delete_poll(channel):
+    async def delete_poll(channel: TextChannel | Thread):
         """deletes an poll which is in the setup-phase."""
         
-        if type(channel) is disnake.Thread:
+        if type(channel) is Thread:
             await channel.delete()
         else:
             await poll_dic[str(channel.id)].mess.delete()
