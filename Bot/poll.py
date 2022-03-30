@@ -94,6 +94,7 @@ class Poll(object):
             while(self.time > 86400):
                 self.time -= 86400
                 await sleep(86400)
+                print("send Auto dearchive message")
                 message = await self.channel.send("Auto-dearchive message.")
                 await message.delete()
         await sleep(self.time)
