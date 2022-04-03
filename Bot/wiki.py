@@ -7,7 +7,7 @@ from wikipedia.wikipedia import WikipediaPage
 
 WIKI_DEFAULT_LANG = "de"
 
-def wiki_main(search_phrase: str, lang: str= WIKI_DEFAULT_LANG):
+def wiki_main(search_phrase: str, lang: str= WIKI_DEFAULT_LANG) -> disnake.Embed:
     """Entry method of the wiki module, takes search-phrase and language and returns the discord Embed"""
     
     try:    
