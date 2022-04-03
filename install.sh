@@ -6,4 +6,5 @@ wget https://raw.githubusercontent.com/Looby72/DiscordBot/new-command-structure/
 wget https://raw.githubusercontent.com/Looby72/DiscordBot/new-command-structure/Bot/wiki.py
 pip install pyinstaller
 python3 -m pip install -U disnake
+python3 -m pip install wikipedia
 pyinstaller Bot.py
