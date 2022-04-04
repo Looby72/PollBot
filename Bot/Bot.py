@@ -50,8 +50,6 @@ async def wiki(inter: ApplicationCommandInteraction, search_phrase: str, languag
     help= "poll")
 async def poll(ctx: Context, *args: str):
 
-    if len(args) < 1 or len(args) > 2:
-        return
     if args[0] == "create":
         if len(args) < 2:
             return
@@ -67,7 +65,7 @@ async def poll(ctx: Context, *args: str):
         args = args[1:]
         await utils.rename_poll(ctx.message.channel, " ".join(args))
     elif args[0] == "time":
-        if len(args) < 2:
+        if len(args) != 2:
             return
         await utils.set_poll_time(ctx.message.channel.id, args[1])
     elif args[0] == "delete":
@@ -79,7 +77,7 @@ async def poll(ctx: Context, *args: str):
             return
         await utils.add_answer(ctx.message)
     elif args[0] == "delans":
-        if len(args) < 2:
+        if len(args) != 2:
             return
         await utils.delete_answer(ctx.message)
     return
@@ -100,6 +98,7 @@ Please report any Bugs on [GitHub](https://github.com/Looby72/DiscordBot/issues)
 
 
 class utils:
+    """This class defines all static methods to "communicate" with the Poll class"""
     
     @staticmethod
     async def create_poll(channel: TextChannel | Thread, name: str):
@@ -109,7 +108,7 @@ class utils:
             await channel.send("This command is only avaliable in normal Guild-Text-Channels")
             return
 
-        thread = await channel.create_thread(name= "Poll '" + name + "'", type=disnake.ChannelType.public_thread, auto_archive_duration= 1440)
+        thread = await channel.create_thread(name= f"Poll '{name}'", type=disnake.ChannelType.public_thread, auto_archive_duration= 1440)
         
         new_poll = Poll(name= name, channel= thread)
         poll_dic[str(thread.id)] = new_poll
@@ -144,7 +143,7 @@ class utils:
             return
 
         if type(channel) is Thread:
-            await channel.edit(name= "Poll '" + new_name + "'")
+            await channel.edit(name= f"Poll '{new_name}'")
         poll_obj.poll_name = new_name
         await poll_obj.send_setup_Embed()
         return

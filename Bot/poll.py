@@ -3,6 +3,7 @@
 import disnake
 from disnake.channel import TextChannel, Thread
 from disnake.message import Message
+
 from asyncio import sleep
 import datetime
 
@@ -24,7 +25,7 @@ class Poll(object):
     mess: :class:`Message`
         The message, wich currently displays the poll in the TextChannel.
         Is ``None`` when there wasn't sent a message yet.
-    emoji_list: :class:`list[str]`
+    emojis: :class:`list[str]`
         The default emoji list which stores the emojis representing
         the answer options of the poll.
     channel: :class:`TextChannel | Thread`
@@ -38,7 +39,7 @@ class Poll(object):
         self.answer_options: list[str] = []
         self.votes: list[int] = []
         self.mess: Message = None
-        self.emoji_list: list[str] = ["0️⃣","1️⃣","2️⃣","3️⃣","4️⃣","5️⃣","6️⃣","7️⃣","8️⃣","9️⃣","🔟"]
+        self.emojis: list[str] = ["0️⃣","1️⃣","2️⃣","3️⃣","4️⃣","5️⃣","6️⃣","7️⃣","8️⃣","9️⃣","🔟"]
         self.channel: TextChannel | Thread = channel
 
         for i in range(ans_number):
@@ -48,7 +49,7 @@ class Poll(object):
         """adds a new answer option into the poll Object, adjusts ans_number and the votes list"""
 
         if self.ans_number == 11:
-            await self.channel.send("Could not add '" +  name + "'. Maximum number of answer options reached.")
+            await self.channel.send(f"Could not add '{name}'. Maximum number of answer options reached.")
             return
         self.answer_options.append(name)
         self.ans_number += 1
@@ -61,7 +62,7 @@ class Poll(object):
         except IndexError:
             self.channel.send("Answer could not be deleted (doesn't exist)")
          
-        await self.channel.send("Removed '" + removed + "'")
+        await self.channel.send(f"Removed '{removed}'")
         self.ans_number -= 1
         self.votes.pop(index)
         
@@ -70,11 +71,11 @@ class Poll(object):
         if this isn't the first one"""
         
         embed = disnake.Embed(title=self.poll_name, colour=disnake.Colour(0xc9a881),
-                            description="\n**Current Settings:**\npoll name = '" +  self.poll_name +"'\ntime = "+ str(self.time) +" seconds\nnumber of answers = "+ str(self.ans_number) +"\n\n**Current answer oprions:**\n",
+                            description=f"\n**Current Settings:**\npoll name = '{self.poll_name}'\ntime = {self.time} seconds\nnumber of answers = {self.ans_number}\n\n**Current answer oprions:**\n",
                             timestamp=datetime.datetime.now())
 
         for i in range(self.ans_number):
-            embed.add_field(name=self.emoji_list[i], value=self.answer_options[i], inline=True)
+            embed.add_field(name=self.emojis[i], value=self.answer_options[i], inline=True)
 
         if self.mess != None:
             await self.mess.delete()
@@ -106,18 +107,17 @@ class Poll(object):
         time = str(time)
         time = time.split(".")[0]
         embed = disnake.Embed(title=self.poll_name, colour=disnake.Colour(0xc9a881),
-                            description = "Active Poll:\n\nReact with one of the given Emoji's to vote. The poll will end at "+ time +".\n\n**Answer Options are:**\n",
+                            description = f"Active Poll:\n\nReact with one of the given Emoji's to vote. The poll will end at {time}.\n\n**Answer Options are:**\n",
                             timestamp=datetime.datetime.now())
 
         for i in range(self.ans_number):
-            embed.add_field(name=self.emoji_list[i], value=self.answer_options[i], inline=True)
+            embed.add_field(name=self.emojis[i], value=self.answer_options[i], inline=True)
         
         await self.mess.delete()
         self.mess = await self.channel.send(embed=embed)
-        #await self.mess.pin()
 
         for i in range(self.ans_number):
-            await self.mess.add_reaction(self.emoji_list[i])
+            await self.mess.add_reaction(self.emojis[i])
 
     async def analyze_results(self, message: Message):
         """checks which answer has won the poll"""
@@ -127,7 +127,7 @@ class Poll(object):
 
         for i in range(len(message.reactions)):
             for j in range(self.ans_number):
-                if message.reactions[i].emoji == self.emoji_list[j]:
+                if message.reactions[i].emoji == self.emojis[j]:
                     self.votes[j] = message.reactions[i].count
         
         for i in range(self.ans_number):
@@ -142,17 +142,16 @@ class Poll(object):
         the poll is in a Thread"""
         
         embed = disnake.Embed(title=self.poll_name, colour=disnake.Colour(0xc9a881),
-                            description= "**The Winner is drawn**\n\n" + self.answer_options[winner] + " has won the poll with " + str(self.votes[winner]-1) + " votes.",
+                            description= f"**The Winner is drawn**\n\n{self.answer_options[winner]} has won the poll with {self.votes[winner]-1} votes.",
                             timestamp=datetime.datetime.now())
 
-        #await self.mess.unpin()
         await self.mess.delete()
         self.mess = await self.channel.send(embed=embed)
         if type(self.channel) is Thread:
             await self.channel.edit(archived=True)
 
 class PollError(Exception):
-    """Custom Exception for all Exeption raised in Poll-Class"""
+    """Custom Exception for all Exeptions raised in the Poll-Class"""
 
     def __init__(self, error: str) -> None:
         self.error = error
