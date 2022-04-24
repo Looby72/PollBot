@@ -18,10 +18,8 @@ class Poll(object):
         The lasting time of the poll.
     ans_number: :class:`int`
         The number of answers the poll consits of.
-    answer_options: :class:`list[str]`
-        The list of answers.
-    votes: :class:`list[int]`
-        The votes for each element of the answer_options list.
+    answer_options: :class:`list[AnswerOption]`
+        The list of all answer options of the poll.
     mess: :class:`Message`
         The message, wich currently displays the poll in the TextChannel.
         Is ``None`` when there wasn't sent a message yet.
@@ -36,35 +34,32 @@ class Poll(object):
         self.poll_name: str = name
         self.time: int = time
         self.ans_number: int = 0
-        self.answer_options: list[str] = []
-        self.votes: list[int] = []
+        self.answer_options: list[AnswerOption] = []
         self.mess: Message = None
         self.emojis: list[str] = ["0️⃣","1️⃣","2️⃣","3️⃣","4️⃣","5️⃣","6️⃣","7️⃣","8️⃣","9️⃣","🔟"]
         self.channel: TextChannel | Thread = channel
 
         for i in range(ans_number):
-            self.new_ans_op("default_op " + str(i))
+            self.answer_options.append(AnswerOption("default_op " + str(i)))
 
     async def new_ans_op(self, name: str):
-        """adds a new answer option into the poll Object, adjusts ans_number and the votes list"""
+        """adds a new `AnswerOption`into the answer_options list"""
 
         if self.ans_number == 11:
-            await self.channel.send(f"Could not add '{name}'. Maximum number of answer options reached.")
-            return
-        self.answer_options.append(name)
+            raise PollError(f"Could not add '{name}'. Maximum number of answer options reached.")
+
+        self.answer_options.append(AnswerOption(name))
         self.ans_number += 1
-        self.votes.append(0)
 
     async def del_ans_op(self, index: int):
-        """deletes a answer option by list-index, adjusts ans_number and the votes list"""
+        """deletes a answer option by list-index"""
         try:
             removed = self.answer_options.pop(index)
         except IndexError:
-            self.channel.send("Answer could not be deleted (doesn't exist)")
+            raise PollError("Answer could not be deleted from answer_options (doesn't exist)")
          
         await self.channel.send(f"Removed '{removed}'")
         self.ans_number -= 1
-        self.votes.pop(index)
         
     async def send_setup_Embed(self):
         """sends a new setup message (as Embed) in the Text-Channel and deletes the last setup Message,
@@ -75,7 +70,7 @@ class Poll(object):
                             timestamp=datetime.datetime.now())
 
         for i in range(self.ans_number):
-            embed.add_field(name=self.emojis[i], value=self.answer_options[i], inline=True)
+            embed.add_field(name=self.emojis[i], value=self.answer_options[i].name, inline=True)
 
         if self.mess != None:
             await self.mess.delete()
@@ -111,7 +106,7 @@ class Poll(object):
                             timestamp=datetime.datetime.now())
 
         for i in range(self.ans_number):
-            embed.add_field(name=self.emojis[i], value=self.answer_options[i], inline=True)
+            embed.add_field(name=self.emojis[i], value=self.answer_options[i].name, inline=True)
         
         await self.mess.delete()
         self.mess = await self.channel.send(embed=embed)
@@ -120,7 +115,7 @@ class Poll(object):
             await self.mess.add_reaction(self.emojis[i])
 
     async def analyze_results(self, message: Message):
-        """checks which answer has won the poll"""
+        """checks which answer option has won the poll"""
 
         maxvotes = -1
         winner = -1
@@ -128,11 +123,11 @@ class Poll(object):
         for i in range(len(message.reactions)):
             for j in range(self.ans_number):
                 if message.reactions[i].emoji == self.emojis[j]:
-                    self.votes[j] = message.reactions[i].count
+                    self.answer_options[j].votes = message.reactions[i].count
         
         for i in range(self.ans_number):
-            if self.votes[i] > maxvotes:
-                maxvotes = self.votes[i]
+            if self.answer_options[i].votes > maxvotes:
+                maxvotes = self.answer_options[i].votes
                 winner = i
 
         await self.send_result_Embed(winner)
@@ -142,7 +137,7 @@ class Poll(object):
         the poll is in a Thread"""
         
         embed = disnake.Embed(title=self.poll_name, colour=disnake.Colour(0xc9a881),
-                            description= f"**The Winner is drawn**\n\n{self.answer_options[winner]} has won the poll with {self.votes[winner]-1} votes.",
+                            description= f"**The Winner is drawn**\n\n{self.answer_options[winner].name} has won the poll with {self.answer_options[winner].votes-1} votes.",
                             timestamp=datetime.datetime.now())
 
         await self.mess.delete()
@@ -150,11 +145,28 @@ class Poll(object):
         if type(self.channel) is Thread:
             await self.channel.edit(archived=True)
 
+class AnswerOption:
+    """Represents an answer option in an Poll Object.
+    
+    Attributes
+    -----------
+    name: :class:`str`
+        The String representing the answer option.
+    time: :class:`int`
+        Number of votes on this Option."""
+
+    def __init__(self, name: str) -> None:
+        self.name: str = name
+        self.votes: int = 0
+
+    def __str__(self) -> str:
+        return self.name
+
 class PollError(Exception):
     """Custom Exception for all Exeptions raised in the Poll-Class"""
 
     def __init__(self, error: str) -> None:
-        self.error = error
+        self.error_message = error
 
     def __str__(self) -> str:
-        return self.error
+        return self.error_message
