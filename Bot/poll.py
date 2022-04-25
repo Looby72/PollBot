@@ -52,7 +52,7 @@ class Poll(object):
         self.ans_number += 1
 
     async def del_ans_op(self, index: int):
-        """deletes a answer option by list-index"""
+        """deletes an answer option by list-index"""
         try:
             removed = self.answer_options.pop(index)
         except IndexError:
