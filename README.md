@@ -1,5 +1,5 @@
 # PollBot
-An Discord Bot written in Python (disnake library). Current features are: Showing wikipedia Summaries and creating Polls in the Chat. 
+A Discord Bot written in Python (disnake library). Current features are: Showing wikipedia Summaries and creating Polls in the Chat. 
 
 ## Installation (Linux):
 
