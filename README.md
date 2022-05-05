@@ -16,7 +16,10 @@ chmod +x install.sh
 ```console
 ./install.sh
 ```
-- to run the Bot search for runable file 'Bot' (in the dist folder) and exexute it
+- to run the Bot search for runable file 'Bot' (in the dist directory) and exexute it
+```console
+cd Bot/dist/Bot
+```
 ```console
 ./Bot
 ```
