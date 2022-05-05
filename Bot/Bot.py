@@ -54,6 +54,7 @@ async def poll(ctx: Context, *args: str):
         if len(args) < 2:
             return
         args = args[1:]
+        ctx.channel.send(embed=disnake.Embed(description="Created new Poll"))
         await utils.create_poll(ctx.message.channel, " ".join(args))
     elif args[0] == "start":
         if len(args) > 1:
@@ -82,6 +83,14 @@ async def poll(ctx: Context, *args: str):
         await utils.delete_answer(ctx.message)
     return
 
+@client.slash_command(
+    description= "Create a new poll."
+)
+async def poll(inter: ApplicationCommandInteraction, name: str, answer_number: int= 2, time: int= 60):
+
+    await inter.response.send_message(embed=disnake.Embed(description="Created new Poll"))
+    await utils.create_poll(channel= inter.channel, name= name, answer_number= answer_number, time= time)
+
 @client.command(
     name="help",
     description="Get help for all commands this Bot understands.")
@@ -93,15 +102,18 @@ async def help(ctx: Context):
 !poll time [time_in_seconds]    --> set the lasting time of the poll
 !poll delete                    --> delete the poll
 !poll addans [name]             --> add a new answer option
-!poll delans [answer_index]     --> delete an answer option by index\n
-Please report any Bugs on [GitHub](https://github.com/Looby72/DiscordBot/issues)."""))
+!poll delans [answer_index]     --> delete an answer option by index
+
+All Commands are supported by Discord Slash-Commands.
+
+Please report any Bugs on [GitHub](https://github.com/Looby72/PollBot/issues)."""))
 
 
 class utils:
     """This class defines all static methods to "communicate" with the Poll class"""
     
     @staticmethod
-    async def create_poll(channel: TextChannel | Thread, name: str):
+    async def create_poll(channel: TextChannel | Thread, name: str, answer_number: int = 0, time: int = 60):
         """Calls the poll-Constructor and stroes the object in the poll_dic[Thread.id] (every poll creates a new thread)"""
 
         if not (type(channel) is TextChannel):
@@ -110,7 +122,7 @@ class utils:
 
         thread = await channel.create_thread(name= f"Poll '{name}'", type=disnake.ChannelType.public_thread, auto_archive_duration= 1440)
         
-        new_poll = Poll(name= name, channel= thread)
+        new_poll = Poll(name= name, channel= thread, ans_number= answer_number, time= time)
         poll_dic[str(thread.id)] = new_poll
         await poll_dic[str(thread.id)].send_setup_Embed()
 
