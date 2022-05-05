@@ -4,7 +4,7 @@ A Discord Bot written in Python (disnake library). Current features are: Showing
 ## Installation (Linux):
 
 - Install Python 3.10 (tested in 3.10.4)
-- download install.sh from this repository and put it in an directory you want (installation will be there) 
+- download install.sh from this repository and put it in any directory you want (installation will be there) 
 ```console
 wget https://raw.githubusercontent.com/Looby72/PollBot/new-command-structure/install.sh
 ```
