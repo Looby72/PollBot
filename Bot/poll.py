@@ -33,14 +33,14 @@ class Poll(object):
     def __init__(self, channel, ans_number = 0, time = 60, name = 'default'):
         self.poll_name: str = name
         self.time: int = time
-        self.ans_number: int = 0
+        self.ans_number: int = ans_number
         self.answer_options: list[AnswerOption] = []
         self.mess: Message = None
         self.emojis: list[str] = ["0️⃣","1️⃣","2️⃣","3️⃣","4️⃣","5️⃣","6️⃣","7️⃣","8️⃣","9️⃣","🔟"]
         self.channel: TextChannel | Thread = channel
 
         for i in range(ans_number):
-            self.answer_options.append(AnswerOption("default_op " + str(i)))
+            self.answer_options.append(AnswerOption(f"default_option {i}"))
 
     async def new_ans_op(self, name: str):
         """adds a new `AnswerOption`into the answer_options list"""
