@@ -1,11 +1,30 @@
-"""defines the Poll-Class which represents the Poll-object"""
-
+#disnake imports
 import disnake
 from disnake.channel import TextChannel, Thread
 from disnake.message import Message
-
+from disnake import Embed, Colour
+#asyncio imports
 from asyncio import sleep
-import datetime
+#datetime imports
+from datetime import datetime, timedelta
+
+class AnswerOption(object):
+    """Represents an answer option in an Poll Object.
+    
+    Attributes
+    -----------
+    name: :class:`str`
+        The String representing the answer option.
+    votes: :class:`int`
+        Number of votes on this Option."""
+
+    def __init__(self, name: str) -> None:
+        self.name: str = name
+        self.votes: int = 0
+
+    def __str__(self) -> str:
+        return self.name
+
 
 class Poll(object):
     """Represents the Poll-Object which the Bot can create.
@@ -30,143 +49,204 @@ class Poll(object):
         The Discord text-channel or Thread the poll belongs to.
     """
 
-    def __init__(self, channel, ans_number = 0, time = 60, name = 'default'):
+    def __init__(self, channel: TextChannel | Thread, ans_number: int = 0, time: int  = 60, name: str = 'default'):
+        """Poll Constructor sets:
+        poll_name, time, ans_number, emojis (same in evry Poll object), channel
+
+        Note:
+        ans_number should be between 0 and 11, otherwise the function will fail with
+        `PollException`
+
+        calls the Poll.add_answer ans_number times with name = default_option {number}"""
+
         self.poll_name: str = name
         self.time: int = time
-        self.ans_number: int = ans_number
+        self.ans_number: int = 0
         self.answer_options: list[AnswerOption] = []
         self.mess: Message = None
         self.emojis: list[str] = ["0️⃣","1️⃣","2️⃣","3️⃣","4️⃣","5️⃣","6️⃣","7️⃣","8️⃣","9️⃣","🔟"]
         self.channel: TextChannel | Thread = channel
 
-        for i in range(ans_number):
-            self.answer_options.append(AnswerOption(f"default_option {i}"))
+        if ans_number > 11:
+            raise PollError("Maximum of 11 answers per Poll are allowed")
 
-    async def new_ans_op(self, name: str):
-        """adds a new `AnswerOption`into the answer_options list"""
+        if ans_number < 0:
+            raise PollError(f"ans_number must be positive! (ans_number was {ans_number})")
+
+        for i in range(ans_number):
+            self.add_answer(name= f"default_option {i}")
+
+    def add_answer(self, name: str):
+        """Adds a new `AnswerOption` into the answer_options list.
+        Raises PollError if name has > 30 Characters or if ans_number is == 11."""
 
         if self.ans_number == 11:
-            raise PollError(f"Could not add '{name}'. Maximum number of answer options reached.")
+            raise PollError(f"Could not add answer '{name}'. Maximum number of answer options reached.")
+
+        if len(name) > 30:
+            raise PollError(f"Could not add answer '{name}'. Maximum of 30 Charactes are allowed.")
 
         self.answer_options.append(AnswerOption(name))
         self.ans_number += 1
 
-    async def del_ans_op(self, index: int):
-        """deletes an answer option by list-index"""
+    def delete_answer(self, index: int) -> AnswerOption:
+        """Deletes an answer option by list-index
+        returns the deleted answer Option"""
+
         try:
             removed = self.answer_options.pop(index)
         except IndexError:
-            raise PollError("Answer could not be deleted from answer_options (doesn't exist)")
+            raise PollError("Answer could not be deleted (doesn't exist)")
          
-        await self.channel.send(f"Removed '{removed}'")
         self.ans_number -= 1
-        
-    async def send_setup_Embed(self):
-        """sends a new setup message (as Embed) in the Text-Channel and deletes the last setup Message,
-        if this isn't the first one"""
-        
-        embed = disnake.Embed(title=self.poll_name, colour=disnake.Colour(0xc9a881),
-                            description=f"\n**Current Settings:**\npoll name = '{self.poll_name}'\ntime = {self.time} seconds\nnumber of answers = {self.ans_number}\n\n**Current answer oprions:**\n",
-                            timestamp=datetime.datetime.now())
+        return removed
 
-        for i in range(self.ans_number):
-            embed.add_field(name=self.emojis[i], value=self.answer_options[i].name, inline=True)
-
-        if self.mess != None:
-            await self.mess.delete()
-        self.mess = await self.channel.send(embed=embed)
-
+    def __str__(self) -> str:
+        #TODO implement this to get all information of the object
+        pass
 
     async def start(self):
-        """Starts the poll-Event. If the poll lasts longer than 24 hours (and poll is in Thread) then it sends a message every 24 hours in the Thread
-        to prevent the Thread from auto-archiving."""
+        """Calls the entry function of PollSchedule to start the poll event"""
 
         if self.ans_number < 2:
             raise PollError("Cannot start poll with less than 2 answer options.")
-
-        await self.send_progress_Embed()
-
-        if type(self.channel) is Thread:
-            while(self.time > 86400):
-                self.time -= 86400
-                await sleep(86400)
-                print("send Auto dearchive message")
-                message = await self.channel.send("Auto-dearchive message.")
-                await message.delete()
-        await sleep(self.time)
-
-    async def send_progress_Embed(self):
-        """sends a new message (as Embed) which is shown while the poll is in progress, replaces and deletes current self.mess"""
         
-        time = datetime.datetime.now() + datetime.timedelta(seconds=float(self.time))
-        time = str(time)
-        time = time.split(".")[0]
-        embed = disnake.Embed(title=self.poll_name, colour=disnake.Colour(0xc9a881),
-                            description = f"Active Poll:\n\nReact with one of the given Emoji's to vote. The poll will end at {time}.\n\n**Answer Options are:**\n",
-                            timestamp=datetime.datetime.now())
+        await PollSchedule.start(self)
 
-        for i in range(self.ans_number):
-            embed.add_field(name=self.emojis[i], value=self.answer_options[i].name, inline=True)
-        
-        await self.mess.delete()
-        self.mess = await self.channel.send(embed=embed)
-
-        for i in range(self.ans_number):
-            await self.mess.add_reaction(self.emojis[i])
-
-    async def analyze_results(self, message: Message):
-        """checks which answer option has won the poll"""
-
-        maxvotes = -1
-        winner = -1
-
-        for i in range(len(message.reactions)):
-            for j in range(self.ans_number):
-                if message.reactions[i].emoji == self.emojis[j]:
-                    self.answer_options[j].votes = message.reactions[i].count
-        
-        for i in range(self.ans_number):
-            if self.answer_options[i].votes > maxvotes:
-                maxvotes = self.answer_options[i].votes
-                winner = i
-
-        await self.send_result_Embed(winner)
-
-    async def send_result_Embed(self, winner: int):
-        """sends a new result-message (as Embed) which is shown after the poll-event ends also replaces and deletes the current self.mess, archives the Thread if 
-        the poll is in a Thread"""
-        
-        embed = disnake.Embed(title=self.poll_name, colour=disnake.Colour(0xc9a881),
-                            description= f"**The Winner is drawn**\n\n{self.answer_options[winner].name} has won the poll with {self.answer_options[winner].votes-1} votes.",
-                            timestamp=datetime.datetime.now())
-
-        await self.mess.delete()
-        self.mess = await self.channel.send(embed=embed)
-        if type(self.channel) is Thread:
-            await self.channel.edit(archived=True)
-
-class AnswerOption:
-    """Represents an answer option in an Poll Object.
-    
-    Attributes
-    -----------
-    name: :class:`str`
-        The String representing the answer option.
-    time: :class:`int`
-        Number of votes on this Option."""
-
-    def __init__(self, name: str) -> None:
-        self.name: str = name
-        self.votes: int = 0
-
-    def __str__(self) -> str:
-        return self.name
 
 class PollError(Exception):
-    """Custom Exception for all Exeptions raised in the Poll-Class"""
+    """Custom Exception-Class for all Exceptions raised in the Poll-Class"""
 
     def __init__(self, error: str) -> None:
         self.error_message = error
 
     def __str__(self) -> str:
         return self.error_message
+
+
+class PollSchedule:
+    """Defines everything what happenes during a Poll event"""
+
+    async def start(pollobj: Poll):
+        """Start-Phase:
+        calls the PollEmbedSender.sendProgress() method, reacts with
+        the voting Emoji's and goes to the progress-phaseof the 
+        Schedule"""
+
+        await PollEmbedSender.sendProgress(pollobj)
+
+        for i in range(pollobj.ans_number):
+            await pollobj.mess.add_reaction(pollobj.emojis[i])
+
+        await PollSchedule.progress(pollobj)
+    
+    async def progress(pollobj: Poll):
+        """Progress-Phase:
+        Sleeps for the duration of Poll.time. If the poll lasts longer
+        than 24 hours (and poll is in Thread) then it sends a message
+        every 24 hours in the Thread to prevent the Thread from
+        auto-archiving."""
+        
+        if type(pollobj.channel) is Thread:
+            while(pollobj.time > 86400):
+                pollobj.time -= 86400
+                await sleep(86400)
+                message = await pollobj.channel.send("Auto-dearchive message.")
+                await message.delete()
+        await sleep(pollobj.time)
+
+        await PollSchedule.end(pollobj)
+
+    async def end(pollobj: Poll):
+        """End-Phase:
+        Analyzes the results of the completed poll and gets the winner. Therefor it has to
+        get the new Discord `Message` Object from disnake.utils"""
+
+        #find index of answer option with most votes
+        max = -1
+        for i in pollobj.answer_options: 
+            if i.votes > max:
+                winner = pollobj.answer_options.index(i)
+
+        await PollEmbedSender.sendResult(pollobj, winner)
+
+
+class PollEmbed(Embed):
+    """Defines basic format for all Embeds attached to the Poll Bot Function."""   
+        
+    def __init__(self, description: str) -> None:
+
+        super().__init__()
+        
+        self.description = description
+        self.colour = Colour(0x3f8e2f)
+        self.timestamp = datetime.now()                
+
+
+class PollEmbedSender:
+    """All method definitions to send Embeds attached to the Poll Bot Function."""
+
+    async def sendEmbed(message: str, channel: TextChannel | Thread):
+        """Sends an PollEmbed with the given string to the given channel."""
+
+        embed = PollEmbed(message)
+        await channel.send(embed= embed)
+
+    async def sendSetup(pollObj: Poll):
+        """Sends an Embed in the Poll-Channel. It shows the Options of the Poll
+        before starting the Event"""
+
+        string =    f"\n**Current Settings:**\npoll name = '{pollObj.poll_name}'\n"\
+                    f"time = {pollObj.time} seconds\nnumber of answers = "\
+                    f"{pollObj.ans_number}\n\n**Current answer oprions:**\n"
+        embed = PollEmbed(string)
+
+        for i in range(pollObj.ans_number):
+            embed.add_field(
+                name= pollObj.emojis[i],
+                value= pollObj.answer_options[i].name,
+                inline= True
+            )
+
+        if pollObj.mess != None:
+            await pollObj.mess.delete()
+        pollObj.mess = await pollObj.channel.send(embed= embed)
+
+    async def sendProgress(pollObj: Poll):
+        """Sends the Embed which is shown while the Poll is active. It shows all
+        given answer Options, a quick guide how to vote and the timestamp when the
+        poll event will end."""
+        
+        time = datetime.now() + timedelta(seconds=float(pollObj.time))
+        time = str(time)
+        time = time.split(".")[0]
+
+        string =    f"Active Poll:\n\nReact with one of the given Emoji's to vote. The "\
+                    f"poll will end at {time}.\n\n**Answer Options are:**\n"
+        embed = PollEmbed(string)
+
+        for i in range(pollObj.ans_number):
+            embed.add_field(
+                name= pollObj.emojis[i],
+                value= pollObj.answer_options[i].name,
+                inline= True
+            )
+
+        await pollObj.mess.delete()
+        pollObj.mess = await pollObj.channel.send(embed= embed)
+
+    async def sendResult(pollObj: Poll, winner: int):
+        """Sends the Embed which shows the result (winner) of the poll event. If the 
+        channel in which the poll event takes place, is a Thread (usually should be so),
+        then the Thread will be archived."""
+
+        string =    f"**The Winner is drawn**\n\n{pollObj.answer_options[winner].name} "\
+                    f"won the poll with {pollObj.answer_options[winner].votes-1} votes."
+        
+        embed = PollEmbed(string)
+
+        await pollObj.mess.delete()
+        pollObj.mess = await pollObj.channel.send(embed= embed)
+
+        if type(pollObj.channel) is Thread:
+            await pollObj.channel.edit(archived= True)
