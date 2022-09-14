@@ -10,11 +10,15 @@ from operations import PollOperations
 from poll import PollEmbed
 
 token = input("Bot-token:")
+intents = disnake.Intents.default()
+intents.typing = False #better performance since typing event is very spammy
+intents.members = True #for on_reaction_add()
+intents.message_content = True #for command prefix
 
 client = commands.Bot(
     command_prefix="!",
     help_command= None,
-    intetns= disnake.Intents.default(), #TODO get Intents.members (for on_reaction_remove) and Intents.reactions
+    intetns= intents, #TODO get Intents.members (for on_reaction_remove) and Intents.reactions
     sync_commands_debug= True
 )
 
