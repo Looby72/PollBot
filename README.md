@@ -16,10 +16,7 @@ chmod +x install.sh
 ```console
 ./install.sh
 ```
-- to run the Bot search for runable file 'Bot' (in the dist directory) and exexute it
+- to run the Bot execute the python file Bot.py
 ```console
-cd Bot/dist/Bot
-```
-```console
-./Bot
+python3.10 Bot.py
 ```
