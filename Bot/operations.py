@@ -18,13 +18,12 @@ class PollOperations:
         
         return poll_obj
 
-    async def createPoll(channel: TextChannel | Thread, name: str, answer_number: int = 0, time: int = 60):
+    async def createPoll(channel: TextChannel | Thread, name: str, answer_number: int = 0, time: int = 60) -> int:
         """Calls the poll-Constructor and stroes the object in the poll_dic[Thread.id]
         (every poll creates a new thread)"""
         
         if not (type(channel) is TextChannel):
-            await PollEmbedSender.sendEmbed("This command is only avaliable in normal Guild-Text-Channels", channel)
-            return
+            return 0
 
         thread = await channel.create_thread(
             name= f"Poll '{name}'",
@@ -34,6 +33,8 @@ class PollOperations:
         new_poll = Poll(name= name, channel= thread, ans_number= answer_number, time= time)
         poll_dic[str(thread.id)] = new_poll
         await PollEmbedSender.sendSetup(new_poll)
+
+        return 1
 
     async def startPoll(channel: TextChannel | Thread):
         """Gets the Poll Object and calls Poll.start to start the event schedule."""

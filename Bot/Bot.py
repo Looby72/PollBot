@@ -10,16 +10,15 @@ from operations import PollOperations
 from poll import PollEmbed
 
 token = input("Bot-token:")
-intents = disnake.Intents.default()
-intents.typing = False #better performance since typing event is very spammy
-intents.guild_reactions
-intents.members = True #for on_reaction_add()
-intents.message_content = True #for command prefix
+intents = disnake.Intents.all()
+intents.typing = False #better performance since the typing event is very spammy
+intents.presences = False
+
 
 client = commands.Bot(
     command_prefix="!",
     help_command= None,
-    intetns= intents,
+    intents= intents,
     sync_commands_debug= True
 )
 
@@ -104,9 +103,16 @@ async def poll(ctx: Context, *args: str):
     description= "Create a new poll."
 )
 async def poll(inter: ApplicationCommandInteraction, name: str, answer_number: int= 2, time: int= 60):
+    
+    output = await PollOperations.createPoll(channel= inter.channel, name= name, answer_number= answer_number, time= time)
+    if output == 1:
+        message = "Created Poll in a new Thread."
+    elif output == 0:
+        message = "Sorry!\nThis command is only avaliable in normal Guild-Text-Channels."
+    else:
+        message = "Some error occured :("
 
-    await inter.response.send_message(embed= PollEmbed("Created new Poll."))
-    await PollOperations.createPoll(channel= inter.channel, name= name, answer_number= answer_number, time= time)
+    await inter.response.send_message(embed= PollEmbed(message))
 
 @client.command(
     name="help",
@@ -121,9 +127,25 @@ async def help(ctx: Context):
 !poll addans [name]             --> add a new answer option
 !poll delans [answer_index]     --> delete an answer option by index
 
-All Commands are supported by Discord Slash-Commands.
+You can also try to use Discord Slash-Commands.
 
 Please report any Bugs on [GitHub](https://github.com/Looby72/PollBot/issues)."""))
 
+@client.slash_command(
+    description="Get help for all commands this Bot understands."
+)
+async def help(inter: ApplicationCommandInteraction):
+    await inter.response.send_message(embed=disnake.Embed(description="""!wiki (?[lang_acronym]) [search_phrase] --> get the summary of the wikipedia article (default language is german)\n
+!poll create [name]             --> create a poll with a name
+!poll start                     --> start the poll
+!poll rename [name]             --> rename the poll
+!poll time [time_in_seconds]    --> set the lasting time of the poll
+!poll delete                    --> delete the poll
+!poll addans [name]             --> add a new answer option
+!poll delans [answer_index]     --> delete an answer option by index
+
+You can also try to use Discord Slash-Commands.
+
+Please report any Bugs on [GitHub](https://github.com/Looby72/PollBot/issues)."""))
 
 client.run(token)
