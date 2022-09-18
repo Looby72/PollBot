@@ -163,11 +163,14 @@ class PollSchedule:
         get the new Discord `Message` Object from disnake.utils"""
 
         #find index of answer option with most votes
+        print(f"Poll '{pollobj.poll_name}' finished:")
         max = -1
         for i in pollobj.answer_options: 
+            print(f"{i.name}: {i.votes - 1} votes")
             if i.votes > max:
+                max = i.votes
                 winner = pollobj.answer_options.index(i)
-
+        print("\n")
         await PollEmbedSender.sendResult(pollobj, winner)
 
 
