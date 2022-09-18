@@ -9,6 +9,11 @@ from wiki import wiki_main, WIKI_DEFAULT_LANG
 from operations import PollOperations
 from poll import PollEmbed
 
+#TODO
+#better project structure (folder for each command)
+#a smooth help command (with multiple pages etc., maybe with buttons?)
+#customize bot presence (with button for server join, command overview etc.)
+
 token = input("Bot-token:")
 intents = disnake.Intents.all()
 intents.typing = False #better performance since the typing event is very spammy
@@ -26,7 +31,7 @@ client = commands.Bot(
 async def on_ready():
     """Called when the Bot Client is logged in after the start."""
 
-    print("Bot is online")
+    print("Bot is online\n")
     await client.change_presence(activity=disnake.Game("!help"), status=disnake.Status.online)
 
 @client.event
