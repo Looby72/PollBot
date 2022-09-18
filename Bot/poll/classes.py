@@ -170,7 +170,7 @@ class PollSchedule:
             if i.votes > max:
                 max = i.votes
                 winner = pollobj.answer_options.index(i)
-        print("\n")
+                
         await PollEmbedSender.sendResult(pollobj, winner)
 
 

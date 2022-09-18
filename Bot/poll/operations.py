@@ -1,5 +1,6 @@
-from poll import Poll, PollError, PollEmbedSender
-
+#classes imports
+from poll.classes import Poll, PollError, PollEmbedSender
+#disnake imports
 import disnake
 from disnake import TextChannel, Thread, Message
 

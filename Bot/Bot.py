@@ -4,13 +4,12 @@ from disnake import ApplicationCommandInteraction, Reaction, User, client
 from disnake.ext import commands
 from disnake.ext.commands.context import Context
 #wiki imports
-from wiki import wiki_main, WIKI_DEFAULT_LANG
+from wiki.wiki import wiki_main, WIKI_DEFAULT_LANG
 #poll imports
-from operations import PollOperations
-from poll import PollEmbed
+from poll.operations import PollOperations
+from poll.classes import PollEmbed
 
 #TODO
-#better project structure (folder for each command)
 #a smooth help command (with multiple pages etc., maybe with buttons?)
 #customize bot presence (with button for server join, command overview etc.)
 
