@@ -108,7 +108,7 @@ async def poll(inter: ApplicationCommandInteraction, name: str, answer_number: i
     if output == 1:
         message = "Created Poll in a new Thread."
     elif output == 0:
-        message = "Sorry!\nThis command is only avaliable in normal Guild-Text-Channels."
+        message = "Sorry!\nThis command is only available in normal Guild-Text-Channels."
     else:
         message = "Some error occured :("
 
