@@ -8,6 +8,8 @@ from wiki.wiki import wiki_main, WIKI_DEFAULT_LANG
 #poll imports
 from poll.operations import PollOperations
 from poll.classes import PollEmbed
+#help imports
+from help.help import HelpCommand, Page
 
 #TODO
 #a smooth help command (with multiple pages etc., maybe with buttons?)
@@ -120,36 +122,21 @@ async def poll(inter: ApplicationCommandInteraction, name: str, answer_number: i
 
 @client.command(
     name="help",
+    aliases=["Help", "h", "H"],
     description="Get help for all commands this Bot understands.")
-async def help(ctx: Context):
-    await ctx.channel.send(embed=disnake.Embed(description="""!wiki (?[lang_acronym]) [search_phrase] --> get the summary of the wikipedia article (default language is german)\n
-!poll create [name]             --> create a poll with a name
-!poll start                     --> start the poll
-!poll rename [name]             --> rename the poll
-!poll time [time_in_seconds]    --> set the lasting time of the poll
-!poll delete                    --> delete the poll
-!poll addans [name]             --> add a new answer option
-!poll delans [answer_index]     --> delete an answer option by index
-
-You can also try to use Discord Slash-Commands.
-
-Please report any Bugs on [GitHub](https://github.com/Looby72/PollBot/issues)."""))
+async def help(ctx: Context, page: int | str = 0):
+    
+    if type(page) is str:
+        page = page.lower
+        await ctx.send(embed=HelpCommand.get_help_embed(Page[page]))
+    else:
+        await ctx.send(embed=HelpCommand.get_help_embed(page))
 
 @client.slash_command(
     description="Get help for all commands this Bot understands."
 )
-async def help(inter: ApplicationCommandInteraction):
-    await inter.response.send_message(embed=disnake.Embed(description="""!wiki (?[lang_acronym]) [search_phrase] --> get the summary of the wikipedia article (default language is german)\n
-!poll create [name]             --> create a poll with a name
-!poll start                     --> start the poll
-!poll rename [name]             --> rename the poll
-!poll time [time_in_seconds]    --> set the lasting time of the poll
-!poll delete                    --> delete the poll
-!poll addans [name]             --> add a new answer option
-!poll delans [answer_index]     --> delete an answer option by index
+async def help(inter: ApplicationCommandInteraction, page: Page = 0):
 
-You can also try to use Discord Slash-Commands.
-
-Please report any Bugs on [GitHub](https://github.com/Looby72/PollBot/issues)."""))
+    await inter.response.send_message(embed= HelpCommand.get_help_embed(page))
 
 client.run(token)
