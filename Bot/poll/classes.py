@@ -182,7 +182,7 @@ class PollEmbed(Embed):
         super().__init__()
         
         self.description = description
-        self.colour = Colour(0x3f8e2f)
+        self.colour = Colour(0x355326)
         self.timestamp = datetime.now()                
 
 

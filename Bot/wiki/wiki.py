@@ -5,7 +5,7 @@ import wikipedia
 import datetime
 from wikipedia.wikipedia import WikipediaPage
 
-WIKI_DEFAULT_LANG = "de"
+WIKI_DEFAULT_LANG = "en"
 
 def wiki_main(search_phrase: str, lang: str= WIKI_DEFAULT_LANG) -> disnake.Embed:
     """Entry method of the wiki module, takes search-phrase and language and returns the discord Embed"""
@@ -14,7 +14,7 @@ def wiki_main(search_phrase: str, lang: str= WIKI_DEFAULT_LANG) -> disnake.Embed
         lang_param(lang)
         embed = get_embed(search_phrase)
     except Exception as err:
-        embed = disnake.Embed(title = "Error", description = str(err), color = 0xcacfc9, timestamp=datetime.datetime.now())
+        embed = disnake.Embed(title = "Error", description = str(err), color = 0xf9f8f6, timestamp=datetime.datetime.now())
     
     return embed
 
