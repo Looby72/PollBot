@@ -50,7 +50,7 @@ def get_formatted_summary(page: WikipediaPage):
     and with an embedded link to the orgiginal wikipedia article"""
 
     string = page.summary
-    string = string + "\n[original Artikel](" + page.url + ")"
+    string = string + "\n[original article](" + page.url + ")"
 
     sentence_num = 10
     while len(string) > 4096:
