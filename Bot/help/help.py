@@ -25,7 +25,7 @@ __Slash Command:__
 This command also has an Discord slash command syntax. Just type `/wiki`. The Syntax is similar to the normal chat command.
 
 __Errors:__
-In case of an error either the Wikipedia API took to long to find anything, or Wikipedia didn't find anything at all based on your search phrase."""
+In case of an error either the Wikipedia API produced an error, or Wikipedia didn't find anything at all based on your search phrase."""
 PAGE2 = """With the `!poll` command you can create multiple polls with a maximum of 11 answer options and different amounts of time in the text chat of your discord sever. After creating a poll the bot will create a new Thread where you can change settings of your poll and where the poll event will take place.
 
 __Syntax:__
