@@ -12,7 +12,6 @@ from poll.classes import PollEmbed
 from help.help import HelpCommand, Page
 
 #TODO
-#a smooth help command (with multiple pages etc., maybe with buttons?)
 #customize bot presence (with button for server join, command overview etc.)
 
 token = input("Bot-token:")
@@ -63,7 +62,10 @@ async def wiki(ctx: Context, *args: str):
 @client.slash_command(
     description= "Get the summary of an wikipedia article.")
 async def wiki(inter: ApplicationCommandInteraction, search_phrase: str, language: str= WIKI_DEFAULT_LANG):
-    await inter.response.send_message(embed= wiki_main(search_phrase, language))
+
+    await inter.response.defer(with_message= True)
+    #because wiki_main method sometimes takes more than 3 Seconds to produce an output bcause of Wikipedia
+    await inter.edit_original_message(embed= wiki_main(search_phrase, language))
 
 @client.command(
     name="poll",
