@@ -15,6 +15,7 @@ python3.10 -m pip install wikipedia
 ```console
 wget https://raw.githubusercontent.com/Looby72/PollBot/new-command-structure/install.sh
 ```
+-change the VERSION variable in install.sh to the version you want to download (for example v0.3)
 - set execute permission
 ```console
 chmod +x install.sh
@@ -23,10 +24,7 @@ chmod +x install.sh
 ```console
 ./install.sh
 ```
-- to run the Bot execute the python file Bot.py in the directory 'Bot'
-```console
-cd Bot
-```
+- to run the Bot execute the python file Bot.py in the new directory 'Bot'
 ```console
 python3.10 Bot.py
 ```
