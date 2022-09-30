@@ -1,9 +1,8 @@
 rm -rf Bot
-mkdir Bot
+VERSION="v0.2"
+URL="https://github.com/Looby72/PollBot/releases/download/${VERSION}/PollBot.zip"
+FILENAME="Bot${VERSION}.zip"
+curl -L $URL -o $FILENAME
+unzip $FILENAME
+rm $FILENAME
 cd Bot
-wget https://raw.githubusercontent.com/Looby72/PollBot/new-command-structure/Bot/Bot.py
-wget https://raw.githubusercontent.com/Looby72/PollBot/new-command-structure/Bot/poll/classes.py
-wget https://raw.githubusercontent.com/Looby72/PollBot/new-command-structure/Bot/wiki/wiki.py
-wget https://raw.githubusercontent.com/Looby72/PollBot/new-command-structure/Bot/poll/operations.py
-python3.10 -m pip install -U disnake
-python3.10 -m pip install wikipedia
