@@ -23,7 +23,10 @@ chmod +x install.sh
 ```console
 ./install.sh
 ```
-- to run the Bot execute the python file Bot.py
+- to run the Bot execute the python file Bot.py in the directory 'Bot'
+```console
+cd Bot
+```
 ```console
 python3.10 Bot.py
 ```
