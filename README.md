@@ -11,16 +11,15 @@ python3.10 -m pip install -U disnake
 ```console
 python3.10 -m pip install wikipedia
 ```
-- download install.sh from this repository and put it in any directory you want (installation will be there) 
+- download install.sh from the release page and put it in any directory you want (example with version v0.3)
 ```console
-wget https://raw.githubusercontent.com/Looby72/PollBot/new-command-structure/install.sh
+curl -L https://github.com/Looby72/PollBot/releases/download/v0.3/install.sh -o install.sh
 ```
--change the VERSION variable in install.sh to the version you want to download (for example v0.3)
 - set execute permission
 ```console
 chmod +x install.sh
 ```
-- execute the script, it will install wikipedia and disnake python libraries and pyinstaller
+- execute the script, it will download the necessary files and unpack them
 ```console
 ./install.sh
 ```
