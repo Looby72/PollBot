@@ -129,8 +129,8 @@ async def poll(inter: ApplicationCommandInteraction, name: str, answer_number: i
 async def help(ctx: Context, page: int | str = 0):
     
     if type(page) is str:
-        page = page.lower
-        await ctx.send(embed=HelpCommand.get_help_embed(Page[page]))
+        string = page.lower()
+        await ctx.send(embed=HelpCommand.get_help_embed(Page[string].value))
     else:
         await ctx.send(embed=HelpCommand.get_help_embed(page))
 
